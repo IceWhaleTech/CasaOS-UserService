@@ -12,6 +12,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
+	"github.com/IceWhaleTech/CasaOS/pkg/sqlite"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -28,6 +29,14 @@ func init() {
 	config.InitSetup(*configFlag)
 
 	logger.LogInit()
+
+	if len(*dbFlag) == 0 {
+		*dbFlag = config.AppInfo.DBPath + "/db"
+	}
+
+	sqliteDB = sqlite.GetDb(*dbFlag)
+	//gredis.GetRedisConn(config.RedisInfo),
+	service.MyService = service.NewService(sqliteDB)
 }
 
 func main() {

@@ -19,6 +19,17 @@ func CheckNotExist(src string) bool {
 	return os.IsNotExist(err)
 }
 
+// IsNotExistMkDir create a directory if it does not exist
+func IsNotExistMkDir(src string) error {
+	if notExist := CheckNotExist(src); notExist {
+		if err := MkDir(src); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MkDir create a directory
 func MkDir(src string) error {
 	err := os.MkdirAll(src, os.ModePerm)
