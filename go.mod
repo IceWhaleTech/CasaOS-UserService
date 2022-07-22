@@ -9,6 +9,8 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/tidwall/gjson v1.10.2
 	go.uber.org/zap v1.10.0
+	gopkg.in/ini.v1 v1.66.6
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/gorm v1.23.8
 )
 

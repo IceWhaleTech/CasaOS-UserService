@@ -8,9 +8,11 @@ import (
 
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
+	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +26,8 @@ var user = flag.String("user", "", "user name")
 func init() {
 	flag.Parse()
 	config.InitSetup(*configFlag)
+
+	logger.LogInit()
 }
 
 func main() {
@@ -56,6 +60,8 @@ func main() {
 		WriteTimeout:   60 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+
+	logger.Info("UserService listening at port", zap.String("port", config.ServerInfo.HttpPort))
 
 	s.ListenAndServe()
 }

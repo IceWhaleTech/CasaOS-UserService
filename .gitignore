@@ -16,4 +16,5 @@
 
 # IDE
 .vscode/
+target/
 __debug_bin
