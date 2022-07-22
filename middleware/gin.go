@@ -3,7 +3,6 @@
  * @Date: 2021-10-08 10:29:08
  * @LastEditors: LinkLeong
  * @LastEditTime: 2022-07-22 11:06:07
- * @FilePath: /CasaOS/middleware/gin.go
  * @Description:
  * @Website: https://www.casaos.io
  * Copyright (c) 2022 by icewhale, All Rights Reserved.
