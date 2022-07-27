@@ -1,22 +1,15 @@
 package model
 
-type ServerModel struct {
-	HttpPort string
-	RunMode  string
+type CommonModel struct {
+	RuntimeVariablesPath string
 }
 
 type APPModel struct {
-	LogPath        string
-	LogSaveName    string
-	LogFileExt     string
-	DateStrFormat  string
-	DateTimeFormat string
-	UserDataPath   string
-	TimeFormat     string
-	DateFormat     string
-	DBPath         string
-	ShellPath      string
-	TempPath       string
+	LogPath      string
+	LogSaveName  string
+	LogFileExt   string
+	UserDataPath string
+	DBPath       string
 }
 
 type Result struct {

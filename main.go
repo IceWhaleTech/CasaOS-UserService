@@ -3,17 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net"
 	"net/http"
-	"time"
 
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
+	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
-	"github.com/IceWhaleTech/CasaOS/pkg/sqlite"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -62,15 +62,14 @@ func main() {
 		return
 	}
 
-	s := &http.Server{
-		Addr:           fmt.Sprintf(":%v", config.ServerInfo.HttpPort),
-		Handler:        r,
-		ReadTimeout:    60 * time.Second,
-		WriteTimeout:   60 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+	listener, err := net.Listen("tcp", "127.1:0")
+	if err != nil {
+		panic(err)
 	}
 
-	logger.Info("UserService listening at port", zap.String("port", config.ServerInfo.HttpPort))
-
-	s.ListenAndServe()
+	log.Printf("user service listening on %s", listener.Addr().String())
+	err = http.Serve(listener, r)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -1,8 +1,9 @@
 package route
 
 import (
+	"os"
+
 	"github.com/IceWhaleTech/CasaOS-UserService/middleware"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/jwt"
 	v1 "github.com/IceWhaleTech/CasaOS-UserService/route/v1"
 	"github.com/gin-contrib/gzip"
@@ -14,7 +15,13 @@ func InitRouter() *gin.Engine {
 	r.Use(middleware.Cors())
 	r.Use(middleware.WriteLog())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
-	gin.SetMode(config.ServerInfo.RunMode)
+
+	// check if environment variable is set
+	if ginMode, success := os.LookupEnv("GIN_MODE"); success {
+		gin.SetMode(ginMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	r.POST("/v1/users/register", v1.PostUserRegister)
 	r.POST("/v1/users/login", v1.PostUserLogin)
