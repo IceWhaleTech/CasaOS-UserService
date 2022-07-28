@@ -4,6 +4,8 @@ github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728010601-3dcf86e06280 h1:Pl9
 github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728010601-3dcf86e06280/go.mod h1:cJaJn2QaUuui4mhwJkc4kP/qIlmbJvH7lnBQw50Jn7k=
 github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728023518-f98faadc9c96 h1:DGfrm4O8GaOU3bjrSJFYLLeqapxOoGmsGdlHYlCOx5o=
 github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728023518-f98faadc9c96/go.mod h1:cJaJn2QaUuui4mhwJkc4kP/qIlmbJvH7lnBQw50Jn7k=
+github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728030026-0b385efe6894 h1:y8CoK41Tp72Q8qTLKqnH8xf26Dg85SUWh7o+HERncQU=
+github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728030026-0b385efe6894/go.mod h1:cJaJn2QaUuui4mhwJkc4kP/qIlmbJvH7lnBQw50Jn7k=
 github.com/benbjohnson/clock v1.1.0 h1:Q92kusRqC1XV2MjkWETPvjJVqKetz1OzxZB7mHJLju8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
