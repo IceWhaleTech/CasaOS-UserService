@@ -11,5 +11,5 @@
 package config
 
 const (
-	USERCONFIGURL = "/etc/casaos.conf"
+	USERCONFIGURL = "/etc/casaos/casaos.conf"
 )

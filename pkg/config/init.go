@@ -9,9 +9,19 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-var CommonInfo = &model.CommonModel{}
+// models with default values
 
-var AppInfo = &model.APPModel{}
+var CommonInfo = &model.CommonModel{
+	RuntimePath: "/var/run/casaos",
+}
+
+var AppInfo = &model.APPModel{
+	DBPath:       "/var/lib/casaos",
+	UserDataPath: "/var/lib/casaos",
+	LogPath:      "/var/log/casaos",
+	LogSaveName:  "user",
+	LogFileExt:   "log",
+}
 
 var Cfg *ini.File
 

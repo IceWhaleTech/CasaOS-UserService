@@ -1,7 +1,7 @@
 package model
 
 type CommonModel struct {
-	RuntimeVariablesPath string
+	RuntimePath string
 }
 
 type APPModel struct {
