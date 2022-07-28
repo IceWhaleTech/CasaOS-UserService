@@ -14,7 +14,7 @@ type Repository interface {
 
 func NewService(db *gorm.DB, RuntimePath string) Repository {
 
-	gatewayManagement, err := gateway.NewManagementService("")
+	gatewayManagement, err := gateway.NewManagementService(RuntimePath)
 	if err != nil {
 		panic(err)
 	}
