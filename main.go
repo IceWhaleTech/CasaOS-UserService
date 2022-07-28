@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/IceWhaleTech/CasaOS-Gateway/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
@@ -62,6 +63,15 @@ func main() {
 	}
 
 	listener, err := net.Listen("tcp", "127.1:0")
+	if err != nil {
+		panic(err)
+	}
+
+	err = service.MyService.Gateway().CreateRoute(&common.Route{
+		Path:   "/v1/user",
+		Target: "http://" + listener.Addr().String(),
+	})
+
 	if err != nil {
 		panic(err)
 	}
