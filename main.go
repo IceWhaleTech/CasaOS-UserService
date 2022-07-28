@@ -68,7 +68,7 @@ func main() {
 	}
 
 	err = service.MyService.Gateway().CreateRoute(&common.Route{
-		Path:   "/v1/user",
+		Path:   "/v1/users",
 		Target: "http://" + listener.Addr().String(),
 	})
 
