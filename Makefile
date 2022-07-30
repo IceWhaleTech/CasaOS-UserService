@@ -20,6 +20,6 @@ install:
 
 uninstall:
 	systemctl disable --now $(APP_NAME).service
-	rm -v $(INSTALL_ROOT)/etc/casaos/$(APP_NAME_SHORT).ini
+	rm -v $(INSTALL_ROOT)/etc/casaos/$(APP_NAME_SHORT).conf
 	rm -v $(INSTALL_ROOT)/usr/bin/$(APP_NAME)
 	rm -v $(INSTALL_ROOT)/usr/lib/systemd/system/$(APP_NAME).service
