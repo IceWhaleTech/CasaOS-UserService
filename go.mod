@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.18
 
 require (
-	github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220728155918-c163591fbd57
+	github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220802033335-96a6b439f016
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.4.2
@@ -23,7 +23,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/goccy/go-json v0.9.10 // indirect
-	github.com/google/go-cmp v0.5.6 // indirect
+	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
