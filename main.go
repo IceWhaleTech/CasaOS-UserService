@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const localhost = "127.1"
+const localhost = "127.0.0.1"
 
 var (
 	sqliteDB   *gorm.DB
