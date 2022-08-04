@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
+	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/model/system_model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/jwt"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
@@ -72,7 +72,6 @@ func PostUserRegister(c *gin.Context) {
 	file.MkDir(config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id))
 	delete(service.UserRegisterHash, key)
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS)})
-
 }
 
 // @Summary login
@@ -90,7 +89,7 @@ func PostUserLogin(c *gin.Context) {
 	username := json["username"]
 
 	password := json["password"]
-	//check params is empty
+	// check params is empty
 	if len(username) == 0 || len(password) == 0 {
 		c.JSON(common_err.CLIENT_ERROR,
 			model.Result{
@@ -255,7 +254,6 @@ func PutUserPassword(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Router /user/nick [put]
 func PutUserNick(c *gin.Context) {
-
 	id := c.GetHeader("user_id")
 	json := make(map[string]string)
 	c.ShouldBind(&json)
@@ -408,7 +406,6 @@ func GetUserCustomConf(c *gin.Context) {
  * @router:/user/custom/:key
  */
 func PostUserCustomConf(c *gin.Context) {
-
 	name := c.Param("key")
 	if len(name) == 0 {
 		c.JSON(common_err.CLIENT_ERROR, model.Result{Success: common_err.INVALID_PARAMS, Message: common_err.GetMsg(common_err.INVALID_PARAMS)})
@@ -490,7 +487,6 @@ func PutUserImage(c *gin.Context) {
 	}
 
 	_, err := file.GetImageExt(path)
-
 	if err != nil {
 		c.JSON(http.StatusOK, model.Result{Success: common_err.NOT_IMAGE, Message: common_err.GetMsg(common_err.NOT_IMAGE)})
 		return
@@ -595,6 +591,7 @@ func GetUserImage(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename*=utf-8''"+url2.PathEscape(fileName))
 	c.File(filePath)
 }
+
 func DeleteUserImage(c *gin.Context) {
 	id := c.GetHeader("user_id")
 	path := c.Query("path")
@@ -640,14 +637,13 @@ func PostUserRefreshToken(c *gin.Context) {
 		c.JSON(common_err.CLIENT_ERROR, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE)})
 		return
 	}
-	newToken := jwt.GetAccessToken(claims.Username, claims.PassWord, claims.Id)
+	newToken := jwt.GetAccessToken(claims.Username, claims.Password, claims.ID)
 	verifyInfo := system_model.VerifyInformation{}
 	verifyInfo.AccessToken = newToken
-	verifyInfo.RefreshToken = jwt.GetRefreshToken(claims.Username, claims.PassWord, claims.Id)
+	verifyInfo.RefreshToken = jwt.GetRefreshToken(claims.Username, claims.Password, claims.ID)
 	verifyInfo.ExpiresAt = time.Now().Add(3 * time.Hour * time.Duration(1)).Unix()
 
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS), Data: verifyInfo})
-
 }
 
 func DeleteUserAll(c *gin.Context) {

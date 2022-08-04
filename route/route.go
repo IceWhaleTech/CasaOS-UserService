@@ -3,8 +3,8 @@ package route
 import (
 	"os"
 
+	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-UserService/middleware"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/jwt"
 	v1 "github.com/IceWhaleTech/CasaOS-UserService/route/v1"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
@@ -25,12 +25,12 @@ func InitRouter() *gin.Engine {
 
 	r.POST("/v1/users/register", v1.PostUserRegister)
 	r.POST("/v1/users/login", v1.PostUserLogin)
-	r.GET("/v1/users/name", v1.GetUserAllUsername) //all/name
+	r.GET("/v1/users/name", v1.GetUserAllUsername) // all/name
 	r.POST("/v1/users/refresh", v1.PostUserRefreshToken)
 	// No short-term modifications
 	r.GET("/v1/users/image", v1.GetUserImage)
 
-	r.GET("/v1/users/status", v1.GetUserStatus) //init/check
+	r.GET("/v1/users/status", v1.GetUserStatus) // init/check
 
 	v1Group := r.Group("/v1")
 
@@ -49,11 +49,11 @@ func InitRouter() *gin.Engine {
 
 			v1UsersGroup.POST("/current/image/:key", v1.PostUserUploadImage)
 			v1UsersGroup.PUT("/current/image/:key", v1.PutUserImage)
-			//v1UserGroup.POST("/file/image/:key", v1.PostUserFileImage)
+			// v1UserGroup.POST("/file/image/:key", v1.PostUserFileImage)
 			v1UsersGroup.DELETE("/current/image", v1.DeleteUserImage)
 
-			//v1UserGroup.PUT("/avatar", v1.PutUserAvatar)
-			//v1UserGroup.GET("/avatar", v1.GetUserAvatar)
+			// v1UserGroup.PUT("/avatar", v1.PutUserAvatar)
+			// v1UserGroup.GET("/avatar", v1.GetUserAvatar)
 			v1UsersGroup.DELETE("/:id", v1.DeleteUser)
 			v1UsersGroup.GET("/:username", v1.GetUserInfoByUsername)
 			v1UsersGroup.DELETE("", v1.DeleteUserAll)

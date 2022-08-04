@@ -12,8 +12,8 @@ package sqlite
 import (
 	"time"
 
+	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/logger"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	"go.uber.org/zap"
 	"gorm.io/driver/sqlite"
@@ -27,8 +27,8 @@ func GetDb(dbPath string) *gorm.DB {
 		return gdb
 	}
 	// Refer https://github.com/go-sql-driver/mysql#dsn-data-source-name
-	//dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", m.User, m.PWD, m.IP, m.Port, m.DBName)
-	//db, err := gorm.Open(mysql2.Open(dsn), &gorm.Config{})
+	// dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", m.User, m.PWD, m.IP, m.Port, m.DBName)
+	// db, err := gorm.Open(mysql2.Open(dsn), &gorm.Config{})
 	file.IsNotExistMkDir(dbPath)
 	db, err := gorm.Open(sqlite.Open(dbPath+"/user.db"), &gorm.Config{})
 	c, _ := db.DB()

@@ -7,11 +7,11 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-Gateway/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
-	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
@@ -20,16 +20,18 @@ import (
 
 var sqliteDB *gorm.DB
 
-var configFlag = flag.String("c", "", "config address")
-var dbFlag = flag.String("db", "", "db path")
-var resetUser = flag.Bool("ru", false, "reset user")
-var user = flag.String("user", "", "user name")
+var (
+	configFlag = flag.String("c", "", "config address")
+	dbFlag     = flag.String("db", "", "db path")
+	resetUser  = flag.Bool("ru", false, "reset user")
+	user       = flag.String("user", "", "user name")
+)
 
 func init() {
 	flag.Parse()
 	config.InitSetup(*configFlag)
 
-	logger.LogInit()
+	logger.LogInit(config.AppInfo.LogPath, config.AppInfo.LogSaveName, config.AppInfo.LogFileExt)
 
 	if len(*dbFlag) == 0 {
 		*dbFlag = config.AppInfo.DBPath + "/db"
@@ -40,7 +42,6 @@ func init() {
 }
 
 func main() {
-
 	r := route.InitRouter()
 
 	if *resetUser {
