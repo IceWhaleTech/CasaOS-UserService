@@ -1,0 +1,12 @@
+[Unit]
+After=casaos-gateway.service
+ConditionFileNotEmpty=/etc/casaos/user-service.conf
+Description=CasaOS User Service
+
+[Service]
+ExecStart=/usr/bin/casaos-user-service -c /etc/casaos/user-service.conf
+PIDFile=/var/run/casaos/user-service.pid
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
