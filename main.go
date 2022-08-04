@@ -18,9 +18,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var sqliteDB *gorm.DB
+const localhost = "127.1"
 
 var (
+	sqliteDB   *gorm.DB
 	configFlag = flag.String("c", "", "config address")
 	dbFlag     = flag.String("db", "", "db path")
 	resetUser  = flag.Bool("ru", false, "reset user")
@@ -63,7 +64,7 @@ func main() {
 		return
 	}
 
-	listener, err := net.Listen("tcp", "127.1:0")
+	listener, err := net.Listen("tcp", net.JoinHostPort(localhost, "0"))
 	if err != nil {
 		panic(err)
 	}
