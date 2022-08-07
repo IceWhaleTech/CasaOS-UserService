@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-Gateway/common"
@@ -15,21 +16,27 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
-	"gorm.io/gorm"
 )
 
-const localhost = "127.0.0.1"
-
-var (
-	sqliteDB   *gorm.DB
-	configFlag = flag.String("c", "", "config address")
-	dbFlag     = flag.String("db", "", "db path")
-	resetUser  = flag.Bool("ru", false, "reset user")
-	user       = flag.String("user", "", "user name")
+const (
+	version   = "0.3.5"
+	localhost = "127.0.0.1"
 )
 
 func init() {
+	configFlag := flag.String("c", "", "config address")
+	dbFlag := flag.String("db", "", "db path")
+	resetUserFlag := flag.Bool("ru", false, "reset user")
+	userFlag := flag.String("user", "", "user name")
+	versionFlag := flag.Bool("v", false, "version")
+
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(version)
+		os.Exit(0)
+	}
+
 	config.InitSetup(*configFlag)
 
 	logger.LogInit(config.AppInfo.LogPath, config.AppInfo.LogSaveName, config.AppInfo.LogFileExt)
@@ -38,31 +45,33 @@ func init() {
 		*dbFlag = config.AppInfo.DBPath + "/db"
 	}
 
-	sqliteDB = sqlite.GetDb(*dbFlag)
+	sqliteDB := sqlite.GetDb(*dbFlag)
 	service.MyService = service.NewService(sqliteDB, config.CommonInfo.RuntimePath)
-}
 
-func main() {
-	r := route.InitRouter()
-
-	if *resetUser {
-		if user == nil || len(*user) == 0 {
+	if *resetUserFlag {
+		if userFlag == nil || len(*userFlag) == 0 {
 			fmt.Println("user is empty")
 			return
 		}
-		userData := service.MyService.User().GetUserAllInfoByName(*user)
+
+		userData := service.MyService.User().GetUserAllInfoByName(*userFlag)
+
 		if userData.Id == 0 {
 			fmt.Println("user not exist")
 			return
 		}
+
 		password := random.RandomString(6, false)
 		userData.Password = encryption.GetMD5ByStr(password)
 		service.MyService.User().UpdateUserPassword(userData)
 		fmt.Println("User reset successful")
 		fmt.Println("UserName:" + userData.Username)
 		fmt.Println("Password:" + password)
-		return
 	}
+}
+
+func main() {
+	r := route.InitRouter()
 
 	listener, err := net.Listen("tcp", net.JoinHostPort(localhost, "0"))
 	if err != nil {
