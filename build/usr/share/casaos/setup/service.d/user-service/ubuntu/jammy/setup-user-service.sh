@@ -1,1 +1,1 @@
-../setup-gateway.sh
+../setup-user-service.sh

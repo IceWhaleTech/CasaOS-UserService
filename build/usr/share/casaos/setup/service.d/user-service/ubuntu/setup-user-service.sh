@@ -1,1 +1,1 @@
-setup-user-service.sh
+../debian/setup-user-service.sh
