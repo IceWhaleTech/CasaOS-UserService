@@ -26,15 +26,14 @@ var AppInfo = &model.APPModel{
 var Cfg *ini.File
 
 func InitSetup(config string) {
-
-	var configDir = USERCONFIGURL
+	configFilePath := UserServiceConfigFilePath
 	if len(config) > 0 {
-		configDir = config
+		configFilePath = config
 	}
 
 	var err error
 
-	Cfg, err = ini.Load(configDir)
+	Cfg, err = ini.Load(configFilePath)
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
 		os.Exit(1)
@@ -44,9 +43,31 @@ func InitSetup(config string) {
 	mapTo("app", AppInfo)
 }
 
+func SaveSetup(config string) {
+	reflectFrom("common", CommonInfo)
+	reflectFrom("app", AppInfo)
+
+	configFilePath := UserServiceConfigFilePath
+	if len(config) > 0 {
+		configFilePath = config
+	}
+
+	if err := Cfg.SaveTo(configFilePath); err != nil {
+		fmt.Printf("Fail to save file: %v", err)
+		os.Exit(1)
+	}
+}
+
 func mapTo(section string, v interface{}) {
 	err := Cfg.Section(section).MapTo(v)
 	if err != nil {
 		log.Fatalf("Cfg.MapTo %s err: %v", section, err)
+	}
+}
+
+func reflectFrom(section string, v interface{}) {
+	err := Cfg.Section(section).ReflectFrom(v)
+	if err != nil {
+		log.Fatalf("Cfg.ReflectFrom %s err: %v", section, err)
 	}
 }
