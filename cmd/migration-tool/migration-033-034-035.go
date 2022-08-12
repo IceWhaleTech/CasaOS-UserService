@@ -56,12 +56,6 @@ func (u *migrationTool) Migrate() error {
 		return err
 	}
 
-	// LogSaveName
-	logSaveName, err := legacyConfigFile.Section("app").GetKey("LogSaveName")
-	if err != nil {
-		return err
-	}
-
 	// LogFileExt
 	logFileExt, err := legacyConfigFile.Section("app").GetKey("LogFileExt")
 	if err != nil {
@@ -80,6 +74,7 @@ func (u *migrationTool) Migrate() error {
 		return err
 	}
 
+	_logger.Info("Updating %s with settings from legacy configuration...", config.UserServiceConfigFilePath)
 	config.InitSetup(config.UserServiceConfigFilePath)
 
 	config.AppInfo.LogPath = logPath.Value()

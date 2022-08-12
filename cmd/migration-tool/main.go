@@ -52,7 +52,9 @@ func main() {
 		}
 	}
 
-	migrationTools := []interfaces.MigrationTool{}
+	migrationTools := []interfaces.MigrationTool{
+		NewMigrationToolFor033_034_035(),
+	}
 
 	var selectedMigrationTool interfaces.MigrationTool
 
