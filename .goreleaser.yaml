@@ -7,7 +7,7 @@ before:
     - go mod tidy
 builds:
   - id: casaos-user-service-amd64
-    binary: build/usr/bin/casaos-user-service
+    binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
       - CC=x86_64-linux-gnu-gcc-11
@@ -16,7 +16,7 @@ builds:
     goarch:
       - amd64
   - id: casaos-user-service-arm64
-    binary: build/usr/bin/casaos-user-service
+    binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
       - CC=aarch64-linux-gnu-gcc-11
@@ -25,7 +25,7 @@ builds:
     goarch:
       - arm64
   - id: casaos-user-service-arm-7
-    binary: build/usr/bin/casaos-user-service
+    binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
       - CC=arm-linux-gnueabihf-gcc-11
@@ -36,7 +36,7 @@ builds:
     goarm:
       - 7
   - id: casaos-user-service-migration-tool-amd64
-    binary: build/usr/bin/casaos-user-service-migration-tool
+    binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
@@ -46,7 +46,7 @@ builds:
     goarch:
       - amd64
   - id: casaos-user-service-migration-tool-arm64
-    binary: build/usr/bin/casaos-user-service-migration-tool
+    binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
@@ -56,7 +56,7 @@ builds:
     goarch:
       - arm64
   - id: casaos-user-service-migration-tool-arm-7
-    binary: build/usr/bin/casaos-user-service-migration-tool
+    binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
@@ -86,8 +86,6 @@ archives:
       - casaos-user-service-migration-tool-arm-7
     replacements:
       arm: arm-7
-    files:
-      - build/**/*
 checksum:
   name_template: 'checksums.txt'
 snapshot:
