@@ -78,7 +78,6 @@ func (u *migrationTool) Migrate() error {
 	config.InitSetup(config.UserServiceConfigFilePath)
 
 	config.AppInfo.LogPath = logPath.Value()
-	config.AppInfo.LogSaveName = logSaveName.Value()
 	config.AppInfo.LogFileExt = logFileExt.Value()
 	config.AppInfo.DBPath = dbPath.Value()
 	config.AppInfo.UserDataPath = userDataPath.Value()
