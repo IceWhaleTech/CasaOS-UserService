@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	userServiceName = "casaos-user-service.service"
+	userServiceConfigSampleFilePath = "/etc/casaos/user-service.conf.sample"
+	userServiceName                 = "casaos-user-service.service"
 )
 
 var _logger *Logger

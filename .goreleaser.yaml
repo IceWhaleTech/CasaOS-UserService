@@ -6,19 +6,84 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
 builds:
-  - binary: build/usr/bin/casaos-user-service
+  - id: casaos-user-service-amd64
+    binary: build/usr/bin/casaos-user-service
     env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
+      - CC=x86_64-linux-gnu-gcc-11
     goos:
       - linux
     goarch:
       - amd64
+  - id: casaos-user-service-arm64
+    binary: build/usr/bin/casaos-user-service
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc-11
+    goos:
+      - linux
+    goarch:
       - arm64
+  - id: casaos-user-service-arm-7
+    binary: build/usr/bin/casaos-user-service
+    env:
+      - CGO_ENABLED=1
+      - CC=arm-linux-gnueabihf-gcc-11
+    goos:
+      - linux
+    goarch:
+      - arm
+    goarm:
+      - 7
+  - id: casaos-user-service-migration-tool-amd64
+    binary: build/usr/bin/casaos-user-service-migration-tool
+    main: ./cmd/migration-tool
+    env:
+      - CGO_ENABLED=1
+      - CC=x86_64-linux-gnu-gcc-11
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - id: casaos-user-service-migration-tool-arm64
+    binary: build/usr/bin/casaos-user-service-migration-tool
+    main: ./cmd/migration-tool
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc-11
+    goos:
+      - linux
+    goarch:
+      - arm64
+  - id: casaos-user-service-migration-tool-arm-7
+    binary: build/usr/bin/casaos-user-service-migration-tool
+    main: ./cmd/migration-tool
+    env:
+      - CGO_ENABLED=1
+      - CC=arm-linux-gnueabihf-gcc-11
+    goos:
+      - linux
+    goarch:
       - arm
     goarm:
       - 7
 archives:
-  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}"
+  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-v{{ .Version }}"
+    id: casaos-user-service
+    builds:
+      - casaos-user-service-amd64
+      - casaos-user-service-arm64
+      - casaos-user-service-arm-7
+    replacements:
+      arm: arm-7
+    files:
+      - build/**/*
+  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-migration-tool-v{{ .Version }}"
+    id: casaos-user-service-migration-tool
+    builds:
+      - casaos-user-service-migration-tool-amd64
+      - casaos-user-service-migration-tool-arm64
+      - casaos-user-service-migration-tool-arm-7
     replacements:
       arm: arm-7
     files:
