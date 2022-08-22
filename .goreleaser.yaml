@@ -10,7 +10,14 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
-      - CC=x86_64-linux-gnu-gcc-11
+      - CC=x86_64-linux-gnu-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
@@ -19,7 +26,14 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc-11
+      - CC=aarch64-linux-gnu-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
@@ -28,19 +42,33 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CGO_ENABLED=1
-      - CC=arm-linux-gnueabihf-gcc-11
+      - CC=arm-linux-gnueabihf-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
       - arm
     goarm:
-      - 7
+      - "7"
   - id: casaos-user-service-migration-tool-amd64
     binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
-      - CC=x86_64-linux-gnu-gcc-11
+      - CC=x86_64-linux-gnu-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
@@ -50,7 +78,14 @@ builds:
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
-      - CC=aarch64-linux-gnu-gcc-11
+      - CC=aarch64-linux-gnu-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
@@ -60,13 +95,20 @@ builds:
     main: ./cmd/migration-tool
     env:
       - CGO_ENABLED=1
-      - CC=arm-linux-gnueabihf-gcc-11
+      - CC=arm-linux-gnueabihf-gcc
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+    tags:
+      - musl
+      - netgo
     goos:
       - linux
     goarch:
       - arm
     goarm:
-      - 7
+      - "7"
 archives:
   - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-v{{ .Version }}"
     id: casaos-user-service
