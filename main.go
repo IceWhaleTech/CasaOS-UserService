@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
+	"go.uber.org/zap"
 )
 
 const (
@@ -87,7 +87,7 @@ func main() {
 		panic(err)
 	}
 
-	log.Printf("user service listening on %s", listener.Addr().String())
+	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
 	err = http.Serve(listener, r)
 	if err != nil {
 		panic(err)
