@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.18
 
 require (
-	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220811230555-229797f76426
+	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220825143858-d4c7ec24f342
 	github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220804231126-285796241a3b
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/gin v1.8.1

@@ -1,6 +1,6 @@
 github.com/BurntSushi/toml v1.2.0 h1:Rt8g24XnyGTyglgET/PRUNlrUeu9F5L+7FilkXfZgs0=
-github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220811230555-229797f76426 h1:+Yc9qJ6AehudNsIRkoyTe8dmHiHDWsPF/QL7qk8Va6o=
-github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220811230555-229797f76426/go.mod h1:XGqdbedN9UlF3/rylcXKJ2BW4ayugBmEMa4Z0tk2KbQ=
+github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220825143858-d4c7ec24f342 h1:nkiye73Bg+VW9BHRdIlovNKDemikQsIVCaYqo/2B5ls=
+github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220825143858-d4c7ec24f342/go.mod h1:XGqdbedN9UlF3/rylcXKJ2BW4ayugBmEMa4Z0tk2KbQ=
 github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220804231126-285796241a3b h1:IiMCqvGelQLGTX151gqVwrzoPQVJy8Q2JAvkhjiQ6tY=
 github.com/IceWhaleTech/CasaOS-Gateway v0.0.0-20220804231126-285796241a3b/go.mod h1:jcURlZtPPQJJvfIW4ZgDTtpFfak7bPTvKZUxWxf62M8=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
