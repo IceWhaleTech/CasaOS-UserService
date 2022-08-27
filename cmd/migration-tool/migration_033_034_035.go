@@ -8,9 +8,9 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type migrationTool struct{}
+type migrationTool2 struct{}
 
-func (u *migrationTool) IsMigrationNeeded() (bool, error) {
+func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
 	_logger.Info("Checking if migration is needed for CasaoS version between 0.3.3 and 0.3.5...")
 
 	minorVersion, err := version.DetectMinorVersion()
@@ -35,7 +35,7 @@ func (u *migrationTool) IsMigrationNeeded() (bool, error) {
 	return true, nil
 }
 
-func (u *migrationTool) PreMigrate() error {
+func (u *migrationTool2) PreMigrate() error {
 	_logger.Info("Copying %s to %s if it doesn't exist...", userServiceConfigSampleFilePath, config.UserServiceConfigFilePath)
 	if err := file.CopySingleFile(userServiceConfigSampleFilePath, config.UserServiceConfigFilePath, "skip"); err != nil {
 		return err
@@ -43,7 +43,7 @@ func (u *migrationTool) PreMigrate() error {
 	return nil
 }
 
-func (u *migrationTool) Migrate() error {
+func (u *migrationTool2) Migrate() error {
 	_logger.Info("Loading legacy %s...", version.LegacyCasaOSConfigFilePath)
 	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
 	if err != nil {
@@ -87,10 +87,10 @@ func (u *migrationTool) Migrate() error {
 	return nil
 }
 
-func (u *migrationTool) PostMigrate() error {
+func (u *migrationTool2) PostMigrate() error {
 	return nil
 }
 
 func NewMigrationToolFor033_034_035() interfaces.MigrationTool {
-	return &migrationTool{}
+	return &migrationTool2{}
 }
