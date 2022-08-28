@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -11,27 +13,36 @@ import (
 type migrationTool2 struct{}
 
 func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
+	_logger.Info("Checking if `%s` exists...", version.LegacyCasaOSConfigFilePath)
+	if _, err := os.Stat(version.LegacyCasaOSConfigFilePath); err != nil {
+		_logger.Info("`%s` not found, migration is not needed.", version.LegacyCasaOSConfigFilePath)
+		return false, nil
+	}
+
 	_logger.Info("Checking if migration is needed for CasaoS version between 0.3.3 and 0.3.5...")
 
-	minorVersion, err := version.DetectMinorVersion()
+	majorVersion, minorVersion, patchVersion, err := version.DetectLegacyVersion()
 	if err != nil {
+		if err == version.ErrLegacyVersionNotFound {
+			return false, nil
+		}
+
 		return false, err
+	}
+
+	if majorVersion != 0 {
+		return false, nil
 	}
 
 	if minorVersion != 3 {
 		return false, nil
 	}
 
-	// this is the best way to tell if CasaOS version is between 0.3.3 and 0.3.5
-	isUserDataInDatabase, err := version.IsUserDataInDatabase()
-	if err != nil {
-		return false, err
-	}
-
-	if !isUserDataInDatabase {
+	if patchVersion < 3 || patchVersion > 5 {
 		return false, nil
 	}
 
+	// legacy version has to be between 0.3.3 and 0.3.5
 	return true, nil
 }
 
@@ -50,38 +61,34 @@ func (u *migrationTool2) Migrate() error {
 		return err
 	}
 
-	// LogPath
-	logPath, err := legacyConfigFile.Section("app").GetKey("LogPath")
-	if err != nil {
-		return err
-	}
-
-	// LogFileExt
-	logFileExt, err := legacyConfigFile.Section("app").GetKey("LogFileExt")
-	if err != nil {
-		return err
-	}
-
-	// DBPath
-	dbPath, err := legacyConfigFile.Section("app").GetKey("DBPath")
-	if err != nil {
-		return err
-	}
-
-	// UserDataPath
-	userDataPath, err := legacyConfigFile.Section("app").GetKey("UserDataPath")
-	if err != nil {
-		return err
-	}
-
 	_logger.Info("Updating %s with settings from legacy configuration...", config.UserServiceConfigFilePath)
 	config.InitSetup(config.UserServiceConfigFilePath)
 
-	config.AppInfo.LogPath = logPath.Value()
-	config.AppInfo.LogFileExt = logFileExt.Value()
-	config.AppInfo.DBPath = dbPath.Value()
-	config.AppInfo.UserDataPath = userDataPath.Value()
+	// LogPath
+	if logPath, err := legacyConfigFile.Section("app").GetKey("LogPath"); err == nil {
+		_logger.Info("[app] LogPath = %s", logPath.String())
+		config.AppInfo.LogPath = logPath.Value()
+	}
 
+	// LogFileExt
+	if logFileExt, err := legacyConfigFile.Section("app").GetKey("LogFileExt"); err == nil {
+		_logger.Info("[app] LogFileExt = %s", logFileExt.String())
+		config.AppInfo.LogFileExt = logFileExt.Value()
+	}
+
+	// DBPath
+	if dbPath, err := legacyConfigFile.Section("app").GetKey("DBPath"); err == nil {
+		_logger.Info("[app] DBPath = %s", dbPath.String())
+		config.AppInfo.DBPath = dbPath.Value()
+	}
+
+	// UserDataPath
+	if userDataPath, err := legacyConfigFile.Section("app").GetKey("UserDataPath"); err == nil {
+		_logger.Info("[app] UserDataPath = %s", userDataPath.String())
+		config.AppInfo.UserDataPath = userDataPath.Value()
+	}
+
+	_logger.Info("Saving %s...", config.UserServiceConfigFilePath)
 	config.SaveSetup(config.UserServiceConfigFilePath)
 
 	return nil

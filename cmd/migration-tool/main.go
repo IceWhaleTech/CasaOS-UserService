@@ -40,14 +40,14 @@ func main() {
 	}
 
 	if !*forceFlag {
-		serviceEnabled, err := systemctl.IsServiceEnabled(userServiceName)
+		isRunning, err := systemctl.IsServiceRunning(userServiceName)
 		if err != nil {
 			_logger.Error("Failed to check if %s is enabled", userServiceName)
 			panic(err)
 		}
 
-		if serviceEnabled {
-			_logger.Info("%s is already enabled. If migration is still needed, try with -f.", userServiceName)
+		if isRunning {
+			_logger.Info("%s is running. If migration is still needed, try with -f.", userServiceName)
 			os.Exit(1)
 		}
 	}
