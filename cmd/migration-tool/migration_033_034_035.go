@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"time"
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
@@ -54,6 +55,28 @@ func (u *migrationTool2) PreMigrate() error {
 	if err := file.CopySingleFile(userServiceConfigSampleFilePath, config.UserServiceConfigFilePath, "skip"); err != nil {
 		return err
 	}
+
+	extension := "." + time.Now().Format("20060102") + ".bak"
+
+	_logger.Info("Creating a backup %s if it doesn't exist...", version.LegacyCasaOSConfigFilePath+extension)
+	if err := file.CopySingleFile(version.LegacyCasaOSConfigFilePath, version.LegacyCasaOSConfigFilePath+extension, "skip"); err != nil {
+		return err
+	}
+
+	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
+	if err != nil {
+		return err
+	}
+
+	dbPath := legacyConfigFile.Section("app").Key("DBPath").String()
+
+	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
+
+	_logger.Info("Creating a backup %s if it doesn't exist...", dbFile+extension)
+	if err := file.CopySingleFile(dbFile, dbFile+extension, "skip"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -70,8 +93,6 @@ func (u *migrationTool2) Migrate() error {
 }
 
 func (u *migrationTool2) PostMigrate() error {
-	_logger.Info("Dropping `o_users` table in legacy database...")
-
 	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
 	if err != nil {
 		return err
@@ -92,10 +113,15 @@ func (u *migrationTool2) PostMigrate() error {
 
 	defer legacyDB.Close()
 
-	if _, err = legacyDB.Exec("DROP TABLE o_users"); err != nil {
-		_logger.Error("Failed to drop `o_users` table in legacy database: %s", err)
-	}
+	if tableExists, err := isTableExist(legacyDB, "o_users"); err != nil {
+		return err
+	} else if tableExists {
+		_logger.Info("Dropping `o_users` table in legacy database...")
 
+		if _, err = legacyDB.Exec("DROP TABLE o_users"); err != nil {
+			_logger.Error("Failed to drop `o_users` table in legacy database: %s", err)
+		}
+	}
 	return nil
 }
 
@@ -122,7 +148,7 @@ func migrateConfigurationFile2(legacyConfigFile *ini.File) {
 	// DBPath
 	if dbPath, err := legacyConfigFile.Section("app").GetKey("DBPath"); err == nil {
 		_logger.Info("[app] DBPath = %s", dbPath.String())
-		config.AppInfo.DBPath = dbPath.Value()
+		config.AppInfo.DBPath = dbPath.Value() + "/db"
 	}
 
 	// UserDataPath
@@ -155,7 +181,14 @@ func migrateUser2(legacyConfigFile *ini.File) error {
 
 	defer legacyDB.Close()
 
-	sqlStatement := "SELECT id, username, password, role, email, nickname, avatar, description, created_at, updated_at FROM o_users ORDER BY id ASC"
+	if tableExists, err := isTableExist(legacyDB, "o_users"); err != nil {
+		return err
+	} else if !tableExists {
+		_logger.Info("Table `o_users` not found in legacy database. Skipping...")
+		return nil
+	}
+
+	sqlStatement := "SELECT id, username, password, role, email, nickname, avatar, description, created_at FROM o_users ORDER BY id ASC"
 
 	rows, err := legacyDB.Query(sqlStatement)
 	if err != nil {
@@ -178,13 +211,29 @@ func migrateUser2(legacyConfigFile *ini.File) error {
 			&user.Avatar,
 			&user.Description,
 			&user.CreatedAt,
-			&user.UpdatedAt,
 		); err != nil {
 			return err
 		}
+
+		if userService.GetUserAllInfoByName(user.Username).Id > 0 {
+			_logger.Info("User %s already exists in user database at %s, skipping...", user.Username, config.AppInfo.DBPath)
+			continue
+		}
+
 		_logger.Info("Creating user %s in user database...", user.Username)
 		user = userService.CreateUser(user)
 	}
 
 	return nil
+}
+
+func isTableExist(legacyDB *sql.DB, tableName string) (bool, error) {
+	rows, err := legacyDB.Query("SELECT name FROM sqlite_master WHERE type='table' AND name= ?", tableName)
+	if err != nil {
+		return false, err
+	}
+
+	defer rows.Close()
+
+	return rows.Next(), nil
 }

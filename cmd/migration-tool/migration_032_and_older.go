@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
@@ -56,7 +57,11 @@ func (u *migrationTool1) PreMigrate() error {
 	if err := file.CopySingleFile(userServiceConfigSampleFilePath, config.UserServiceConfigFilePath, "skip"); err != nil {
 		return err
 	}
-	return nil
+
+	extension := "." + time.Now().Format("20060102") + ".bak"
+
+	_logger.Info("Creating a backup %s if it doesn't exist...", version.LegacyCasaOSConfigFilePath+extension)
+	return file.CopySingleFile(version.LegacyCasaOSConfigFilePath, version.LegacyCasaOSConfigFilePath+extension, "skip")
 }
 
 func (u *migrationTool1) Migrate() error {
@@ -81,7 +86,7 @@ func (u *migrationTool1) PostMigrate() error {
 
 	legacyConfigFile.DeleteSection("user")
 
-	return nil
+	return legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath)
 }
 
 func NewMigrationToolFor032AndOlder() interfaces.MigrationTool {
@@ -151,29 +156,35 @@ func migrateUser1(legacyConfigFile *ini.File) error {
 	newDB := sqlite.GetDb(config.AppInfo.DBPath)
 	userService := service.NewUserService(newDB)
 
-	if len(user.Username) > 0 && userService.GetUserInfoByUserName(user.Username).Id == 0 {
-		_logger.Info("Creating user %s in database under %s...", user.Username, config.AppInfo.DBPath)
-		user = userService.CreateUser(user)
-		if user.Id > 0 {
-			userPath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
-			_logger.Info("Creating user data path: %s", userPath)
-			if err := file.MkDir(userPath); err != nil {
-				return err
-			}
+	if len(user.Username) == 0 {
+		_logger.Info("No user found in legacy configuration file. Skipping...")
+		return nil
+	}
 
-			if legacyProjectPath, err := legacyConfigFile.Section("app").GetKey("ProjectPath"); err == nil {
-				appOrderJSONFile := filepath.Join(legacyProjectPath.Value(), "app_order.json")
+	if userService.GetUserInfoByUserName(user.Username).Id > 0 {
+		_logger.Info("User `%s` already exists in user database at %s. Skipping...", user.Username, config.AppInfo.DBPath)
+		return nil
+	}
 
-				if _, err := os.Stat(appOrderJSONFile); err == nil {
-					_logger.Info("Moving %s to %s...", appOrderJSONFile, userPath)
-					if err := os.Rename(appOrderJSONFile, filepath.Join(userPath, "app_order.json")); err != nil {
-						return err
-					}
+	_logger.Info("Creating user %s in database at %s...", user.Username, config.AppInfo.DBPath)
+	user = userService.CreateUser(user)
+	if user.Id > 0 {
+		userPath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
+		_logger.Info("Creating user data path: %s", userPath)
+		if err := file.MkDir(userPath); err != nil {
+			return err
+		}
+
+		if legacyProjectPath, err := legacyConfigFile.Section("app").GetKey("ProjectPath"); err == nil {
+			appOrderJSONFile := filepath.Join(legacyProjectPath.Value(), "app_order.json")
+
+			if _, err := os.Stat(appOrderJSONFile); err == nil {
+				_logger.Info("Moving %s to %s...", appOrderJSONFile, userPath)
+				if err := os.Rename(appOrderJSONFile, filepath.Join(userPath, "app_order.json")); err != nil {
+					return err
 				}
 			}
 		}
-	} else {
-		_logger.Info("No user found, skipping...")
 	}
 
 	return nil
