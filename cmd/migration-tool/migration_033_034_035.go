@@ -13,13 +13,10 @@ import (
 type migrationTool2 struct{}
 
 func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
-	_logger.Info("Checking if `%s` exists...", version.LegacyCasaOSConfigFilePath)
 	if _, err := os.Stat(version.LegacyCasaOSConfigFilePath); err != nil {
 		_logger.Info("`%s` not found, migration is not needed.", version.LegacyCasaOSConfigFilePath)
 		return false, nil
 	}
-
-	_logger.Info("Checking if migration is needed for CasaoS version between 0.3.3 and 0.3.5...")
 
 	majorVersion, minorVersion, patchVersion, err := version.DetectLegacyVersion()
 	if err != nil {
@@ -43,6 +40,7 @@ func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
 	}
 
 	// legacy version has to be between 0.3.3 and 0.3.5
+	_logger.Info("Migration is needed for a CasaOS version between 0.3.3 and 0.3.5...")
 	return true, nil
 }
 

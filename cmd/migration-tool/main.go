@@ -53,6 +53,7 @@ func main() {
 	}
 
 	migrationTools := []interfaces.MigrationTool{
+		NewMigrationToolFor032AndOlder(),
 		NewMigrationToolFor033_034_035(),
 	}
 

@@ -20,13 +20,10 @@ import (
 type migrationTool1 struct{}
 
 func (u *migrationTool1) IsMigrationNeeded() (bool, error) {
-	_logger.Info("Checking if `%s` exists...", version.LegacyCasaOSConfigFilePath)
 	if _, err := os.Stat(version.LegacyCasaOSConfigFilePath); err != nil {
 		_logger.Info("`%s` not found, migration is not needed.", version.LegacyCasaOSConfigFilePath)
 		return false, nil
 	}
-
-	_logger.Info("Checking if migration is needed for CasaoS version 0.3.2 or older...")
 
 	majorVersion, minorVersion, patchVersion, err := version.DetectLegacyVersion()
 	if err != nil {
@@ -42,10 +39,12 @@ func (u *migrationTool1) IsMigrationNeeded() (bool, error) {
 	}
 
 	if minorVersion == 2 {
+		_logger.Info("Migration is needed for a CasaOS version 0.2.x...")
 		return true, nil
 	}
 
 	if minorVersion == 3 && patchVersion < 2 {
+		_logger.Info("Migration is needed for a CasaOS version between 0.3.0 and 0.3.2...")
 		return true, nil
 	}
 
@@ -134,14 +133,18 @@ func (u *migrationTool1) Migrate() error {
 		if user.Id > 0 {
 			userPath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
 			_logger.Info("Creating user data path: %s", userPath)
-			file.MkDir(userPath)
+			if err := file.MkDir(userPath); err != nil {
+				return err
+			}
 
 			if legacyProjectPath, err := legacyConfigFile.Section("app").GetKey("ProjectPath"); err == nil {
-				appOrderJsonFile := path.Join(legacyProjectPath.Value(), "app_order.json")
+				appOrderJSONFile := path.Join(legacyProjectPath.Value(), "app_order.json")
 
-				if _, err := os.Stat(appOrderJsonFile); err == nil {
-					_logger.Info("Moving %s to %s...", appOrderJsonFile, userPath)
-					os.Rename(appOrderJsonFile, path.Join(userPath, "app_order.json"))
+				if _, err := os.Stat(appOrderJSONFile); err == nil {
+					_logger.Info("Moving %s to %s...", appOrderJSONFile, userPath)
+					if err := os.Rename(appOrderJSONFile, path.Join(userPath, "app_order.json")); err != nil {
+						return err
+					}
 				}
 			}
 		}
