@@ -1,12 +1,17 @@
 package main
 
 import (
+	"database/sql"
 	"os"
+	"path/filepath"
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
+	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
+	"github.com/IceWhaleTech/CasaOS-UserService/service"
+	"github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	"gopkg.in/ini.v1"
 )
 
@@ -59,6 +64,46 @@ func (u *migrationTool2) Migrate() error {
 		return err
 	}
 
+	migrateConfigurationFile2(legacyConfigFile)
+
+	return migrateUser2(legacyConfigFile)
+}
+
+func (u *migrationTool2) PostMigrate() error {
+	_logger.Info("Dropping `o_users` table in legacy database...")
+
+	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
+	if err != nil {
+		return err
+	}
+
+	dbPath := legacyConfigFile.Section("app").Key("DBPath").String()
+
+	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
+
+	if _, err := os.Stat(dbFile); err != nil {
+		return err
+	}
+
+	legacyDB, err := sql.Open("sqlite3", dbFile)
+	if err != nil {
+		return err
+	}
+
+	defer legacyDB.Close()
+
+	if _, err = legacyDB.Exec("DROP TABLE o_users"); err != nil {
+		_logger.Error("Failed to drop `o_users` table in legacy database: %s", err)
+	}
+
+	return nil
+}
+
+func NewMigrationToolFor033_034_035() interfaces.MigrationTool {
+	return &migrationTool2{}
+}
+
+func migrateConfigurationFile2(legacyConfigFile *ini.File) {
 	_logger.Info("Updating %s with settings from legacy configuration...", config.UserServiceConfigFilePath)
 	config.InitSetup(config.UserServiceConfigFilePath)
 
@@ -88,14 +133,58 @@ func (u *migrationTool2) Migrate() error {
 
 	_logger.Info("Saving %s...", config.UserServiceConfigFilePath)
 	config.SaveSetup(config.UserServiceConfigFilePath)
-
-	return nil
 }
 
-func (u *migrationTool2) PostMigrate() error {
-	return nil
-}
+func migrateUser2(legacyConfigFile *ini.File) error {
+	_logger.Info("Migrating user from legacy database to user database...")
 
-func NewMigrationToolFor033_034_035() interfaces.MigrationTool {
-	return &migrationTool2{}
+	user := model.UserDBModel{Role: "admin"}
+
+	dbPath := legacyConfigFile.Section("app").Key("DBPath").String()
+
+	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
+
+	if _, err := os.Stat(dbFile); err != nil {
+		return err
+	}
+
+	legacyDB, err := sql.Open("sqlite3", dbFile)
+	if err != nil {
+		return err
+	}
+
+	defer legacyDB.Close()
+
+	sqlStatement := "SELECT id, username, password, role, email, nickname, avatar, description, created_at, updated_at FROM o_users ORDER BY id ASC"
+
+	rows, err := legacyDB.Query(sqlStatement)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	newDB := sqlite.GetDb(config.AppInfo.DBPath)
+	userService := service.NewUserService(newDB)
+
+	for rows.Next() {
+		if err := rows.Scan(
+			&user.Id,
+			&user.Username,
+			&user.Password,
+			&user.Role,
+			&user.Email,
+			&user.Nickname,
+			&user.Avatar,
+			&user.Description,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+		); err != nil {
+			return err
+		}
+		_logger.Info("Creating user %s in user database...", user.Username)
+		user = userService.CreateUser(user)
+	}
+
+	return nil
 }

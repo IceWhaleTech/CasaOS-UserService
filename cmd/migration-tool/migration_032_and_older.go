@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -66,6 +66,29 @@ func (u *migrationTool1) Migrate() error {
 		return err
 	}
 
+	migrateConfigurationFile1(legacyConfigFile)
+
+	return migrateUser1(legacyConfigFile)
+}
+
+func (u *migrationTool1) PostMigrate() error {
+	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
+
+	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
+	if err != nil {
+		return err
+	}
+
+	legacyConfigFile.DeleteSection("user")
+
+	return nil
+}
+
+func NewMigrationToolFor032AndOlder() interfaces.MigrationTool {
+	return &migrationTool1{}
+}
+
+func migrateConfigurationFile1(legacyConfigFile *ini.File) {
 	_logger.Info("Updating %s with settings from legacy configuration...", config.UserServiceConfigFilePath)
 	config.InitSetup(config.UserServiceConfigFilePath)
 
@@ -94,11 +117,12 @@ func (u *migrationTool1) Migrate() error {
 
 	_logger.Info("Saving %s...", config.UserServiceConfigFilePath)
 	config.SaveSetup(config.UserServiceConfigFilePath)
+}
 
+func migrateUser1(legacyConfigFile *ini.File) error {
 	_logger.Info("Migrating user from configuration file to database...")
 
-	user := model.UserDBModel{}
-	user.Role = "admin"
+	user := model.UserDBModel{Role: "admin"}
 
 	// UserName
 	if userName, err := legacyConfigFile.Section("user").GetKey("UserName"); err == nil {
@@ -124,11 +148,11 @@ func (u *migrationTool1) Migrate() error {
 		user.Password = encryption.GetMD5ByStr(userPassword.Value())
 	}
 
-	sqliteDB := sqlite.GetDb(path.Join(config.AppInfo.DBPath, "user.db"))
-	userService := service.NewUserService(sqliteDB)
+	newDB := sqlite.GetDb(config.AppInfo.DBPath)
+	userService := service.NewUserService(newDB)
 
 	if len(user.Username) > 0 && userService.GetUserInfoByUserName(user.Username).Id == 0 {
-		_logger.Info("Creating user %s in database...", user.Username)
+		_logger.Info("Creating user %s in database under %s...", user.Username, config.AppInfo.DBPath)
 		user = userService.CreateUser(user)
 		if user.Id > 0 {
 			userPath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
@@ -138,11 +162,11 @@ func (u *migrationTool1) Migrate() error {
 			}
 
 			if legacyProjectPath, err := legacyConfigFile.Section("app").GetKey("ProjectPath"); err == nil {
-				appOrderJSONFile := path.Join(legacyProjectPath.Value(), "app_order.json")
+				appOrderJSONFile := filepath.Join(legacyProjectPath.Value(), "app_order.json")
 
 				if _, err := os.Stat(appOrderJSONFile); err == nil {
 					_logger.Info("Moving %s to %s...", appOrderJSONFile, userPath)
-					if err := os.Rename(appOrderJSONFile, path.Join(userPath, "app_order.json")); err != nil {
+					if err := os.Rename(appOrderJSONFile, filepath.Join(userPath, "app_order.json")); err != nil {
 						return err
 					}
 				}
@@ -153,12 +177,4 @@ func (u *migrationTool1) Migrate() error {
 	}
 
 	return nil
-}
-
-func (u *migrationTool1) PostMigrate() error {
-	return nil
-}
-
-func NewMigrationToolFor032AndOlder() interfaces.MigrationTool {
-	return &migrationTool1{}
 }

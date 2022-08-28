@@ -86,6 +86,6 @@ func main() {
 	}
 
 	if err := selectedMigrationTool.PostMigrate(); err != nil {
-		panic(err)
+		_logger.Error("Post migration failed: %s", err)
 	}
 }
