@@ -42,7 +42,7 @@ func main() {
 	if !*forceFlag {
 		isRunning, err := systemctl.IsServiceRunning(userServiceName)
 		if err != nil {
-			_logger.Error("Failed to check if %s is enabled", userServiceName)
+			_logger.Error("Failed to check if %s is running", userServiceName)
 			panic(err)
 		}
 
@@ -86,6 +86,6 @@ func main() {
 	}
 
 	if err := selectedMigrationTool.PostMigrate(); err != nil {
-		_logger.Error("Post migration failed: %s", err)
+		_logger.Error("Migration succeeded, but post-migration failed: %s", err)
 	}
 }

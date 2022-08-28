@@ -135,25 +135,25 @@ func migrateConfigurationFile2(legacyConfigFile *ini.File) {
 
 	// LogPath
 	if logPath, err := legacyConfigFile.Section("app").GetKey("LogPath"); err == nil {
-		_logger.Info("[app] LogPath = %s", logPath.String())
+		_logger.Info("[app] LogPath = %s", logPath.Value())
 		config.AppInfo.LogPath = logPath.Value()
 	}
 
 	// LogFileExt
 	if logFileExt, err := legacyConfigFile.Section("app").GetKey("LogFileExt"); err == nil {
-		_logger.Info("[app] LogFileExt = %s", logFileExt.String())
+		_logger.Info("[app] LogFileExt = %s", logFileExt.Value())
 		config.AppInfo.LogFileExt = logFileExt.Value()
 	}
 
 	// DBPath
 	if dbPath, err := legacyConfigFile.Section("app").GetKey("DBPath"); err == nil {
-		_logger.Info("[app] DBPath = %s", dbPath.String())
+		_logger.Info("[app] DBPath = %s", dbPath.Value())
 		config.AppInfo.DBPath = dbPath.Value() + "/db"
 	}
 
 	// UserDataPath
 	if userDataPath, err := legacyConfigFile.Section("app").GetKey("UserDataPath"); err == nil {
-		_logger.Info("[app] UserDataPath = %s", userDataPath.String())
+		_logger.Info("[app] UserDataPath = %s", userDataPath.Value())
 		config.AppInfo.UserDataPath = userDataPath.Value()
 	}
 
