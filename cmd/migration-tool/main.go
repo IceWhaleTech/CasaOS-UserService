@@ -40,19 +40,20 @@ func main() {
 	}
 
 	if !*forceFlag {
-		serviceEnabled, err := systemctl.IsServiceEnabled(userServiceName)
+		isRunning, err := systemctl.IsServiceRunning(userServiceName)
 		if err != nil {
-			_logger.Error("Failed to check if %s is enabled", userServiceName)
+			_logger.Error("Failed to check if %s is running", userServiceName)
 			panic(err)
 		}
 
-		if serviceEnabled {
-			_logger.Info("%s is already enabled. If migration is still needed, try with -f.", userServiceName)
+		if isRunning {
+			_logger.Info("%s is running. If migration is still needed, try with -f.", userServiceName)
 			os.Exit(1)
 		}
 	}
 
 	migrationTools := []interfaces.MigrationTool{
+		NewMigrationToolFor032AndOlder(),
 		NewMigrationToolFor033_034_035(),
 	}
 
@@ -85,6 +86,6 @@ func main() {
 	}
 
 	if err := selectedMigrationTool.PostMigrate(); err != nil {
-		panic(err)
+		_logger.Error("Migration succeeded, but post-migration failed: %s", err)
 	}
 }

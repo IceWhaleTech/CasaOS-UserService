@@ -42,7 +42,7 @@ func init() {
 	logger.LogInit(config.AppInfo.LogPath, config.AppInfo.LogSaveName, config.AppInfo.LogFileExt)
 
 	if len(*dbFlag) == 0 {
-		*dbFlag = config.AppInfo.DBPath + "/db"
+		*dbFlag = config.AppInfo.DBPath
 	}
 
 	sqliteDB := sqlite.GetDb(*dbFlag)
