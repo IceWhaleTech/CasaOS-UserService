@@ -51,6 +51,8 @@ github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha3.0.20220830031944-7e2f7a1049
 github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha3.0.20220830031944-7e2f7a1049d3/go.mod h1:j1ej7ZpANTDkxWW1RMo+02rnMjniH+/hoUY9VMGNDNU=
 github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha3.0.20220830041022-57698b195b60 h1:dYu2rGy9sOVlJ808E7cjRvzXPcklI7KTB5GaLz9V4f8=
 github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha3.0.20220830041022-57698b195b60/go.mod h1:j1ej7ZpANTDkxWW1RMo+02rnMjniH+/hoUY9VMGNDNU=
+github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha4 h1:fSlA5kNBS/Q4D6bFWiNZTwUfsYQ5F/78vJLvUoowXao=
+github.com/IceWhaleTech/CasaOS-Gateway v0.3.6-alpha4/go.mod h1:8E5T8HJn2OUXz+KBZRD84CzwhBdCWsIBuQChZJ7XDwE=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
 github.com/benbjohnson/clock v1.3.0 h1:ip6w0uFQkncKQ979AypyG0ER7mqUSBdKLOgAle/AT8A=
 github.com/benbjohnson/clock v1.3.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=
