@@ -16,6 +16,8 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+const defaultDBPath = "/var/lib/casaos"
+
 type migrationTool2 struct{}
 
 func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
@@ -89,6 +91,14 @@ func (u *migrationTool2) PreMigrate() error {
 
 	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
 
+	if _, err := os.Stat(dbFile); err != nil {
+		dbFile = filepath.Join(defaultDBPath, "db", "casaOS.db")
+
+		if _, err := os.Stat(dbFile); err != nil {
+			return err
+		}
+	}
+
 	_logger.Info("Creating a backup %s if it doesn't exist...", dbFile+extension)
 	if err := file.CopySingleFile(dbFile, dbFile+extension, "skip"); err != nil {
 		return err
@@ -120,7 +130,11 @@ func (u *migrationTool2) PostMigrate() error {
 	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
 
 	if _, err := os.Stat(dbFile); err != nil {
-		return err
+		dbFile = filepath.Join(defaultDBPath, "db", "casaOS.db")
+
+		if _, err := os.Stat(dbFile); err != nil {
+			return err
+		}
 	}
 
 	legacyDB, err := sql.Open("sqlite3", dbFile)
@@ -139,7 +153,12 @@ func (u *migrationTool2) PostMigrate() error {
 			_logger.Error("Failed to drop `o_users` table in legacy database: %s", err)
 		}
 	}
-	return nil
+
+	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
+
+	legacyConfigFile.DeleteSection("user")
+
+	return legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath)
 }
 
 func NewMigrationToolFor033_034_035() interfaces.MigrationTool {
@@ -188,9 +207,12 @@ func migrateUser2(legacyConfigFile *ini.File) error {
 	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
 
 	if _, err := os.Stat(dbFile); err != nil {
-		return err
-	}
+		dbFile = filepath.Join(defaultDBPath, "db", "casaOS.db")
 
+		if _, err := os.Stat(dbFile); err != nil {
+			return err
+		}
+	}
 	legacyDB, err := sql.Open("sqlite3", dbFile)
 	if err != nil {
 		return err
