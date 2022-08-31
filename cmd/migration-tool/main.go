@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"os"
@@ -11,9 +12,13 @@ import (
 )
 
 const (
-	userServiceConfigSampleFilePath = "/etc/casaos/user-service.conf.sample"
-	userServiceName                 = "casaos-user-service.service"
+	userServiceConfigDirPath  = "/etc/casaos"
+	userServiceConfigFilePath = "/etc/casaos/user-service.conf"
+	userServiceName           = "casaos-user-service.service"
 )
+
+//go:embedded ../../build/sysroot/etc/casaos/user-service.conf.sample
+var _userServiceConfigFileSample string
 
 var _logger *Logger
 
@@ -24,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Println(common.Version)
+		fmt.Printf("v%s\n", common.Version)
 		os.Exit(0)
 	}
 
