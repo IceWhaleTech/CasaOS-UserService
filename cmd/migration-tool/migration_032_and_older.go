@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -94,16 +95,56 @@ func (u *migrationTool1) Migrate() error {
 }
 
 func (u *migrationTool1) PostMigrate() error {
-	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
-
 	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
 	if err != nil {
 		return err
 	}
 
+	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
+
 	legacyConfigFile.DeleteSection("user")
 
-	return legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath)
+	if err := legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath); err != nil {
+		return err
+	}
+
+	dbPath := legacyConfigFile.Section("app").Key("DBPath").String()
+
+	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
+
+	if _, err := os.Stat(dbFile); err != nil {
+		dbFile = filepath.Join(defaultDBPath, "db", "casaOS.db")
+
+		if _, err := os.Stat(dbFile); err != nil {
+			return nil
+		}
+	}
+
+	legacyDB, err := sql.Open("sqlite3", dbFile)
+	if err != nil {
+		return err
+	}
+
+	defer legacyDB.Close()
+
+	for _, tableName := range []string{"o_users", "o_user"} {
+		tableExists, err := isTableExist(legacyDB, tableName)
+		if err != nil {
+			return err
+		}
+
+		if !tableExists {
+			continue
+		}
+
+		_logger.Info("Dropping `%s` table in legacy database...", tableName)
+
+		if _, err = legacyDB.Exec("DROP TABLE " + tableName); err != nil {
+			_logger.Error("Failed to drop `%s` table in legacy database: %s", tableName, err)
+		}
+	}
+
+	return nil
 }
 
 func NewMigrationToolFor032AndOlder() interfaces.MigrationTool {

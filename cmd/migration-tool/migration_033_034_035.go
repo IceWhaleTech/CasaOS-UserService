@@ -125,6 +125,14 @@ func (u *migrationTool2) PostMigrate() error {
 		return err
 	}
 
+	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
+
+	legacyConfigFile.DeleteSection("user")
+
+	if err := legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath); err != nil {
+		return err
+	}
+
 	dbPath := legacyConfigFile.Section("app").Key("DBPath").String()
 
 	dbFile := filepath.Join(dbPath, "db", "casaOS.db")
@@ -133,7 +141,7 @@ func (u *migrationTool2) PostMigrate() error {
 		dbFile = filepath.Join(defaultDBPath, "db", "casaOS.db")
 
 		if _, err := os.Stat(dbFile); err != nil {
-			return err
+			return nil
 		}
 	}
 
@@ -144,21 +152,24 @@ func (u *migrationTool2) PostMigrate() error {
 
 	defer legacyDB.Close()
 
-	if tableExists, err := isTableExist(legacyDB, "o_users"); err != nil {
-		return err
-	} else if tableExists {
-		_logger.Info("Dropping `o_users` table in legacy database...")
+	for _, tableName := range []string{"o_users", "o_user"} {
+		tableExists, err := isTableExist(legacyDB, tableName)
+		if err != nil {
+			return err
+		}
 
-		if _, err = legacyDB.Exec("DROP TABLE o_users"); err != nil {
-			_logger.Error("Failed to drop `o_users` table in legacy database: %s", err)
+		if !tableExists {
+			continue
+		}
+
+		_logger.Info("Dropping `%s` table in legacy database...", tableName)
+
+		if _, err = legacyDB.Exec("DROP TABLE " + tableName); err != nil {
+			_logger.Error("Failed to drop `%s` table in legacy database: %s", tableName, err)
 		}
 	}
 
-	_logger.Info("Deleting legacy `user` section in %s...", version.LegacyCasaOSConfigFilePath)
-
-	legacyConfigFile.DeleteSection("user")
-
-	return legacyConfigFile.SaveTo(version.LegacyCasaOSConfigFilePath)
+	return nil
 }
 
 func NewMigrationToolFor033_034_035() interfaces.MigrationTool {
@@ -220,47 +231,54 @@ func migrateUser2(legacyConfigFile *ini.File) error {
 
 	defer legacyDB.Close()
 
-	if tableExists, err := isTableExist(legacyDB, "o_users"); err != nil {
-		return err
-	} else if !tableExists {
-		_logger.Info("Table `o_users` not found in legacy database. Skipping...")
-		return nil
-	}
-
-	sqlStatement := "SELECT id, username, password, role, email, nickname, avatar, description, created_at FROM o_users ORDER BY id ASC"
-
-	rows, err := legacyDB.Query(sqlStatement)
-	if err != nil {
-		return err
-	}
-
-	defer rows.Close()
-
 	newDB := sqlite.GetDb(config.AppInfo.DBPath)
 	userService := service.NewUserService(newDB)
 
-	for rows.Next() {
-		if err := rows.Scan(
-			&user.Id,
-			&user.Username,
-			&user.Password,
-			&user.Role,
-			&user.Email,
-			&user.Nickname,
-			&user.Avatar,
-			&user.Description,
-			&user.CreatedAt,
-		); err != nil {
+	// create an inline map from string to string
+	sqlTableStatementMap := make(map[string]string)
+	sqlTableStatementMap["o_users"] = "SELECT id, username, password, role, email, nickname, avatar, description, created_at FROM o_users ORDER BY id ASC"
+	sqlTableStatementMap["o_user"] = "SELECT id, user_name, password, role, email, nick_name, avatar, description, created_at FROM o_user ORDER BY id ASC"
+
+	// historically there were two names for user table: o_users and users
+	for tableName, sqlStatement := range sqlTableStatementMap {
+		tableExists, err := isTableExist(legacyDB, tableName)
+		if err != nil {
 			return err
 		}
 
-		if userService.GetUserAllInfoByName(user.Username).Id > 0 {
-			_logger.Info("User %s already exists in user database at %s, skipping...", user.Username, config.AppInfo.DBPath)
+		if !tableExists {
 			continue
 		}
+		rows, err := legacyDB.Query(sqlStatement)
+		if err != nil {
+			return err
+		}
 
-		_logger.Info("Creating user %s in user database...", user.Username)
-		user = userService.CreateUser(user)
+		defer rows.Close()
+
+		for rows.Next() {
+			if err := rows.Scan(
+				&user.Id,
+				&user.Username,
+				&user.Password,
+				&user.Role,
+				&user.Email,
+				&user.Nickname,
+				&user.Avatar,
+				&user.Description,
+				&user.CreatedAt,
+			); err != nil {
+				return err
+			}
+
+			if userService.GetUserAllInfoByName(user.Username).Id > 0 {
+				_logger.Info("User %s already exists in user database at %s, skipping...", user.Username, config.AppInfo.DBPath)
+				continue
+			}
+
+			_logger.Info("Creating user %s in user database...", user.Username)
+			user = userService.CreateUser(user)
+		}
 	}
 
 	return nil
