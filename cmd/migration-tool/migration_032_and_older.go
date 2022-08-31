@@ -53,9 +53,26 @@ func (u *migrationTool1) IsMigrationNeeded() (bool, error) {
 }
 
 func (u *migrationTool1) PreMigrate() error {
-	_logger.Info("Copying %s to %s if it doesn't exist...", userServiceConfigSampleFilePath, config.UserServiceConfigFilePath)
-	if err := file.CopySingleFile(userServiceConfigSampleFilePath, config.UserServiceConfigFilePath, "skip"); err != nil {
-		return err
+	if _, err := os.Stat(userServiceConfigDirPath); os.IsNotExist(err) {
+		_logger.Info("Creating %s since it doesn't exists...", userServiceConfigDirPath)
+		if err := os.Mkdir(userServiceConfigDirPath, 0o755); err != nil {
+			return err
+		}
+	}
+
+	if _, err := os.Stat(userServiceConfigFilePath); os.IsNotExist(err) {
+		_logger.Info("Creating %s since it doesn't exist...", userServiceConfigFilePath)
+
+		f, err := os.Create(userServiceConfigFilePath)
+		if err != nil {
+			return err
+		}
+
+		defer f.Close()
+
+		if _, err := f.WriteString(_userServiceConfigFileSample); err != nil {
+			return err
+		}
 	}
 
 	extension := "." + time.Now().Format("20060102") + ".bak"
