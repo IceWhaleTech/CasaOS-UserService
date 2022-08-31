@@ -33,7 +33,7 @@ func init() {
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Println(version)
+		fmt.Printf("v%s\n", common.Version)
 		os.Exit(0)
 	}
 
