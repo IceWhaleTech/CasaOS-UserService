@@ -8,6 +8,7 @@ import (
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/systemctl"
+	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
 	"github.com/IceWhaleTech/CasaOS-UserService/common"
 )
 
@@ -15,12 +16,16 @@ const (
 	userServiceConfigDirPath  = "/etc/casaos"
 	userServiceConfigFilePath = "/etc/casaos/user-service.conf"
 	userServiceName           = "casaos-user-service.service"
+	userServiceNameShort      = "user-service"
 )
 
 //go:embedded ../../build/sysroot/etc/casaos/user-service.conf.sample
 var _userServiceConfigFileSample string
 
-var _logger *Logger
+var (
+	_logger *Logger
+	_status *version.GlobalMigrationStatus
+)
 
 func main() {
 	versionFlag := flag.Bool("v", false, "version")

@@ -8,6 +8,7 @@ import (
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
+	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
@@ -16,11 +17,21 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-const defaultDBPath = "/var/lib/casaos"
-
 type migrationTool2 struct{}
 
+const defaultDBPath = "/var/lib/casaos"
+
 func (u *migrationTool2) IsMigrationNeeded() (bool, error) {
+	if status, err := version.GetGlobalMigrationStatus(userServiceNameShort); err == nil {
+		_status = status
+		if status.LastMigratedVersion != "" {
+			_logger.Info("Last migrated version: %s", status.LastMigratedVersion)
+			if r, err := version.Compare(status.LastMigratedVersion, common.Version); err == nil {
+				return r < 0, nil
+			}
+		}
+	}
+
 	if _, err := os.Stat(version.LegacyCasaOSConfigFilePath); err != nil {
 		_logger.Info("`%s` not found, migration is not needed.", version.LegacyCasaOSConfigFilePath)
 		return false, nil
@@ -120,6 +131,8 @@ func (u *migrationTool2) Migrate() error {
 }
 
 func (u *migrationTool2) PostMigrate() error {
+	defer _status.Done(common.Version)
+
 	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
 	if err != nil {
 		return err

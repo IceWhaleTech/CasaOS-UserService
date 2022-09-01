@@ -2,7 +2,6 @@ package file
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -36,7 +35,7 @@ func MkDir(src string) error {
 	if err != nil {
 		return err
 	}
-	os.Chmod(src, 0777)
+	os.Chmod(src, 0o777)
 
 	return nil
 }
@@ -53,7 +52,7 @@ func IsNotExistCreateFile(src string) error {
 }
 
 func Exists(path string) bool {
-	_, err := os.Stat(path) //os.Stat获取文件信息
+	_, err := os.Stat(path) // os.Stat获取文件信息
 	if err != nil {
 		return os.IsExist(err)
 	}
@@ -75,7 +74,7 @@ func ReadFullFile(path string) []byte {
 		return []byte("")
 	}
 	defer file.Close()
-	content, err := ioutil.ReadAll(file)
+	content, err := io.ReadAll(file)
 	if err != nil {
 		return []byte("")
 	}
@@ -134,7 +133,7 @@ func WriteToPath(data []byte, path, name string) error {
 	IsNotExistCreateFile(fullPath)
 	file, err := os.OpenFile(fullPath,
 		os.O_WRONLY|os.O_TRUNC|os.O_CREATE,
-		0666,
+		0o666,
 	)
 	if err != nil {
 		return err
