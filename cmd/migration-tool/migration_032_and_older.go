@@ -10,6 +10,7 @@ import (
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
+	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
@@ -22,6 +23,16 @@ import (
 type migrationTool1 struct{}
 
 func (u *migrationTool1) IsMigrationNeeded() (bool, error) {
+	if status, err := version.GetGlobalMigrationStatus(userServiceNameShort); err == nil {
+		_status = status
+		if status.LastMigratedVersion != "" {
+			_logger.Info("Last migrated version: %s", status.LastMigratedVersion)
+			if r, err := version.Compare(status.LastMigratedVersion, common.Version); err == nil {
+				return r < 0, nil
+			}
+		}
+	}
+
 	if _, err := os.Stat(version.LegacyCasaOSConfigFilePath); err != nil {
 		_logger.Info("`%s` not found, migration is not needed.", version.LegacyCasaOSConfigFilePath)
 		return false, nil
@@ -95,6 +106,8 @@ func (u *migrationTool1) Migrate() error {
 }
 
 func (u *migrationTool1) PostMigrate() error {
+	defer _status.Done(common.Version)
+
 	legacyConfigFile, err := ini.Load(version.LegacyCasaOSConfigFilePath)
 	if err != nil {
 		return err
