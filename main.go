@@ -18,10 +18,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	version   = "0.3.6"
-	localhost = "127.0.0.1"
-)
+const localhost = "127.0.0.1"
 
 func init() {
 	configFlag := flag.String("c", "", "config address")
