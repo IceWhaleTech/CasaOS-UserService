@@ -58,29 +58,37 @@ __is_migration_needed() {
 }
 
 BUILD_PATH=$(dirname "${BASH_SOURCE[0]}")/../../..
-SOURCE_ROOT=${BUILD_PATH}/sysroot
 
-APP_NAME="casaos-user-service"
-APP_NAME_FORMAL="CasaOS-UserService"
-APP_NAME_SHORT="user-service"
-APP_NAME_LEGACY="casaos"
+readonly BUILD_PATH
+readonly SOURCE_ROOT=${BUILD_PATH}/sysroot
+
+readonly APP_NAME="casaos-user-service"
+readonly APP_NAME_FORMAL="CasaOS-UserService"
+readonly APP_NAME_SHORT="user-service"
+readonly APP_NAME_LEGACY="casaos"
 
 # check if migration is needed
-SOURCE_BIN_PATH=${SOURCE_ROOT}/usr/bin
-SOURCE_BIN_FILE=${SOURCE_BIN_PATH}/${APP_NAME}
+readonly SOURCE_BIN_PATH=${SOURCE_ROOT}/usr/bin
+readonly SOURCE_BIN_FILE=${SOURCE_BIN_PATH}/${APP_NAME}
 
-CURRENT_BIN_PATH=/usr/bin
-CURRENT_BIN_PATH_LEGACY=/usr/local/bin
-CURRENT_BIN_FILE=${CURRENT_BIN_PATH}/${APP_NAME}
+readonly CURRENT_BIN_PATH=/usr/bin
+readonly CURRENT_BIN_PATH_LEGACY=/usr/local/bin
+readonly CURRENT_BIN_FILE=${CURRENT_BIN_PATH}/${APP_NAME}
+
 CURRENT_BIN_FILE_LEGACY=$(realpath -e ${CURRENT_BIN_PATH}/${APP_NAME_LEGACY} || realpath -e ${CURRENT_BIN_PATH_LEGACY}/${APP_NAME_LEGACY} || which ${APP_NAME_LEGACY} || echo CURRENT_BIN_FILE_LEGACY_NOT_FOUND)
+readonly CURRENT_BIN_FILE_LEGACY
 
 SOURCE_VERSION="$(${SOURCE_BIN_FILE} -v)"
+readonly SOURCE_VERSION
+
 CURRENT_VERSION="$(${CURRENT_BIN_FILE} -v || ${CURRENT_BIN_FILE_LEGACY} -v || (stat "${CURRENT_BIN_FILE_LEGACY}" > /dev/null && echo LEGACY_WITHOUT_VERSION) || echo CURRENT_VERSION_NOT_FOUND)"
+readonly CURRENT_VERSION
 
 __info_done "CURRENT_VERSION: ${CURRENT_VERSION}"
 __info_done "SOURCE_VERSION: ${SOURCE_VERSION}"
 
 NEED_MIGRATION=$(__is_migration_needed "${CURRENT_VERSION}" "${SOURCE_VERSION}" && echo "true" || echo "false")
+readonly NEED_MIGRATION
 
 if [ "${NEED_MIGRATION}" = "false" ]; then
     __info_done "Migration is not needed."
@@ -93,9 +101,9 @@ if [ -z "${MIGRATION_SERVICE_DIR}" ]; then
     MIGRATION_SERVICE_DIR=${BUILD_PATH}/scripts/migration/service.d/${APP_NAME_SHORT}
 fi
 
-MIGRATION_LIST_FILE=${MIGRATION_SERVICE_DIR}/migration.list
-MIGRATION_PATH=()
+readonly MIGRATION_LIST_FILE=${MIGRATION_SERVICE_DIR}/migration.list
 
+MIGRATION_PATH=()
 CURRENT_VERSION_FOUND="false"
 
 # a VERSION_PAIR looks like "v0.3.5 v0.3.6-alpha2"
