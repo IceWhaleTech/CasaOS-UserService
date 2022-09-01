@@ -2,7 +2,7 @@ package v1
 
 import (
 	json2 "encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	url2 "net/url"
 	"os"
@@ -418,7 +418,7 @@ func PostUserCustomConf(c *gin.Context) {
 			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
 		return
 	}
-	data, _ := ioutil.ReadAll(c.Request.Body)
+	data, _ := io.ReadAll(c.Request.Body)
 	filePath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
 
 	file.WriteToPath(data, filePath, name+".json")
