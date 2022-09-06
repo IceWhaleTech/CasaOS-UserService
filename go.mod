@@ -4,7 +4,8 @@ go 1.19
 
 require (
 	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220901034123-ca130f6b5ce9
-	github.com/IceWhaleTech/CasaOS-Gateway v0.3.6
+	github.com/IceWhaleTech/CasaOS-Gateway v0.3.7-0.20220906162414-f612e28aa31e
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/gin v1.8.1
 	github.com/satori/go.uuid v1.2.0
@@ -59,6 +60,8 @@ require (
 	github.com/ulikunitz/xz v0.5.9 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/dig v1.14.0 // indirect
+	go.uber.org/fx v1.17.1 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/net v0.0.0-20220726230323-06994584191e // indirect
