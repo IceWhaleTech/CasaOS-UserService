@@ -15,6 +15,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/random"
 	"github.com/IceWhaleTech/CasaOS-UserService/route"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
+	"github.com/coreos/go-systemd/daemon"
 	"go.uber.org/zap"
 )
 
@@ -82,6 +83,14 @@ func main() {
 
 	if err != nil {
 		panic(err)
+	}
+
+	if supported, err := daemon.SdNotify(false, daemon.SdNotifyReady); err != nil {
+		logger.Error("Failed to notify systemd that user service is ready", zap.Any("error", err))
+	} else if supported {
+		logger.Info("Notified systemd that user service is ready")
+	} else {
+		logger.Info("This process is not running as a systemd service.")
 	}
 
 	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
