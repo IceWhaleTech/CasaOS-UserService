@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220901034123-ca130f6b5ce9
-	github.com/IceWhaleTech/CasaOS-Gateway v0.3.7-0.20220906162414-f612e28aa31e
+	github.com/IceWhaleTech/CasaOS-Gateway v0.3.6
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/gin v1.8.1
