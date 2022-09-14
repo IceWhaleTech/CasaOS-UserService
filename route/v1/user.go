@@ -421,7 +421,18 @@ func PostUserCustomConf(c *gin.Context) {
 	data, _ := io.ReadAll(c.Request.Body)
 	filePath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id)
 
-	file.WriteToPath(data, filePath, name+".json")
+	if err := file.IsNotExistMkDir(filePath); err != nil {
+		c.JSON(common_err.SERVICE_ERROR,
+			model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
+		return
+	}
+
+	if err := file.WriteToPath(data, filePath, name+".json"); err != nil {
+		c.JSON(common_err.SERVICE_ERROR,
+			model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
+		return
+	}
+
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS), Data: json2.RawMessage(string(data))})
 }
 
