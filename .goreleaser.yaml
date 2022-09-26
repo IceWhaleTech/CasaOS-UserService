@@ -3,8 +3,8 @@
 project_name: casaos-user-service
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
+    - go test -v ./...
 builds:
   - id: casaos-user-service-amd64
     binary: build/sysroot/usr/bin/casaos-user-service
@@ -131,15 +131,15 @@ archives:
     files:
       - build/sysroot/etc/**/*
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ incpatch .Version }}-snapshot"
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
 release:
   github:
     owner: IceWhaleTech
