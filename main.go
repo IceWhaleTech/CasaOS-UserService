@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
-	"github.com/IceWhaleTech/CasaOS-Gateway/common"
+	gatewayCommon "github.com/IceWhaleTech/CasaOS-Gateway/common"
+	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/sqlite"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/encryption"
@@ -77,7 +78,7 @@ func main() {
 		panic(err)
 	}
 
-	err = service.MyService.Gateway().CreateRoute(&common.Route{
+	err = service.MyService.Gateway().CreateRoute(&gatewayCommon.Route{
 		Path:   "/v1/users",
 		Target: "http://" + listener.Addr().String(),
 	})
