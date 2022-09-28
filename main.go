@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-Gateway/common"
@@ -94,7 +95,13 @@ func main() {
 	}
 
 	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
-	err = http.Serve(listener, r)
+
+	s := &http.Server{
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second, // fix G112: Potential slowloris attack (see https://github.com/securego/gosec)
+	}
+
+	err = s.Serve(listener) // not using http.serve() to fix G114: Use of net/http serve function that has no support for setting timeouts (see https://github.com/securego/gosec)
 	if err != nil {
 		panic(err)
 	}
