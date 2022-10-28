@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.19
 
 require (
-	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20220909125858-92fc5b2e0ae5
+	github.com/IceWhaleTech/CasaOS-Common v0.0.0-20221028202446-faa6bf81bf84
 	github.com/IceWhaleTech/CasaOS-Gateway v0.3.6
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/gin-contrib/gzip v0.0.6
