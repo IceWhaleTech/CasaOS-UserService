@@ -1,20 +1,20 @@
 package service
 
 import (
-	gateway "github.com/IceWhaleTech/CasaOS-Gateway/common"
+	"github.com/IceWhaleTech/CasaOS-Common/external"
 	"gorm.io/gorm"
 )
 
 var MyService Repository
 
 type Repository interface {
-	Gateway() gateway.ManagementService
+	Gateway() external.ManagementService
 	User() UserService
 }
 
 func NewService(db *gorm.DB, RuntimePath string) Repository {
 
-	gatewayManagement, err := gateway.NewManagementService(RuntimePath)
+	gatewayManagement, err := external.NewManagementService(RuntimePath)
 	if err != nil {
 		panic(err)
 	}
@@ -26,11 +26,11 @@ func NewService(db *gorm.DB, RuntimePath string) Repository {
 }
 
 type store struct {
-	gateway gateway.ManagementService
+	gateway external.ManagementService
 	user    UserService
 }
 
-func (c *store) Gateway() gateway.ManagementService {
+func (c *store) Gateway() external.ManagementService {
 	return c.gateway
 }
 
