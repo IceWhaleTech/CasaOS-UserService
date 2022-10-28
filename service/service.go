@@ -1,7 +1,7 @@
 package service
 
 import (
-	external "github.com/IceWhaleTech/CasaOS-Common/service/v1"
+	"github.com/IceWhaleTech/CasaOS-Common/external"
 	"gorm.io/gorm"
 )
 
