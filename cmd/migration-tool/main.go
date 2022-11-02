@@ -8,7 +8,6 @@ import (
 
 	interfaces "github.com/IceWhaleTech/CasaOS-Common"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/systemctl"
-	"github.com/IceWhaleTech/CasaOS-Common/utils/version"
 	"github.com/IceWhaleTech/CasaOS-UserService/common"
 )
 
@@ -20,12 +19,11 @@ const (
 )
 
 //go:embedded ../../build/sysroot/etc/casaos/user-service.conf.sample
-var _userServiceConfigFileSample string
+//var _userServiceConfigFileSample string
 
-var (
-	_logger *Logger
-	_status *version.GlobalMigrationStatus
-)
+var _logger *Logger
+
+// var _status *version.GlobalMigrationStatus
 
 func main() {
 	versionFlag := flag.Bool("v", false, "version")
@@ -63,8 +61,7 @@ func main() {
 	}
 
 	migrationTools := []interfaces.MigrationTool{
-		NewMigrationToolFor032AndOlder(),
-		NewMigrationToolFor033_034_035(),
+		NewMigrationDummy(),
 	}
 
 	var selectedMigrationTool interfaces.MigrationTool
