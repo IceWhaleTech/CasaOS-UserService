@@ -18,4 +18,5 @@
 .vscode/
 target/
 dist/
+codegen/
 __debug_bin

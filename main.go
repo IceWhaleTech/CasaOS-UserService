@@ -1,3 +1,5 @@
+//go:generate bash -c "mkdir -p codegen/user_service && go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.2 -generate types,server,spec -package codegen api/user_service/openapi.yaml > codegen/user_service/api.go"
+
 package main
 
 import (
