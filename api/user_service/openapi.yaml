@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: CasaOS User Service API
+  version: v2
+  description: |-
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_dark_night_800px.png">
+        <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_twilight_blue_800px.png">
+        <img alt="CasaOS" src="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_twilight_blue_800px.png">
+    </picture>
+
+    CasaOS User Service .... (TODO)
+
+    For issues and discussions, please visit the [GitHub repository](https://github.com/IceWhaleTech/CasaOS) or join [our Discord](https://discord.gg/knqAbbBbeX).
+
+servers:
+  - url: /v2/user_service
+
+tags:
+  - name: (TODO) methods
+    description: |-
+      (TODO)
+
+security:
+  - access_token: []
+
+paths:
+  /event:
+    get:
+      summary: Get history events
+      description: |
+        (TODO)
+      operationId: getEvents
+      tags:
+        - (TODO) methods
+      parameters:
+        - in: query
+          name: from
+          description: starting timestamp of the events
+          schema:
+            type: string
+            format: date-time
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+components:
+  securitySchemes:
+    access_token:
+      type: apiKey
+      in: header
+      name: Authorization
+
+  schemas:
+    Property:
+      type: object
+      properties:
+        name:
+          type: string
+          description: property name
+        value:
+          type: string
+          description: property value
+
+    Event:
+      type: object
+      properties:
+        sourceID:
+          type: string
+          description: associated source id
+        name:
+          type: string
+          description: event name
+        properties:
+          type: array
+          description: event properties
+          items:
+            $ref: "#/components/schemas/Property"
+        timestamp:
+          type: string
+          description: timestamp this event took place
+          format: date-time
