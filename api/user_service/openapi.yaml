@@ -27,7 +27,7 @@ security:
 paths:
   /event:
     get:
-      summary: Get history events
+      summary: Get history events from user data (based on user ID in JWT)
       description: |
         (TODO)
       operationId: getEvents
@@ -51,6 +51,27 @@ paths:
                 items:
                   $ref: "#/components/schemas/Event"
 
+  /event/{event_uuid}:
+    delete:
+      summary: Removed event from user data (based on user ID in JWT)
+      description: |
+        (TODO)
+      operationId: removeEvent
+      tags:
+        - (TODO) methods
+      parameters:
+        - in: path
+          name: event_uuid
+          description: UUID of the event
+          required: true
+          schema:
+            type: string
+            description: (TODO)
+            example: c7d3bdab-9001-4ee3-97a9-3f0f0de00b24
+      responses:
+        "200":
+          description: OK
+
 components:
   securitySchemes:
     access_token:
@@ -72,6 +93,10 @@ components:
     Event:
       type: object
       properties:
+        uuid:
+          type: string
+          description: (TODO)
+          example: c7d3bdab-9001-4ee3-97a9-3f0f0de00b24
         sourceID:
           type: string
           description: associated source id
