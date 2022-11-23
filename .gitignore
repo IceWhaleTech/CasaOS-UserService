@@ -19,3 +19,4 @@
 target/
 dist/
 __debug_bin
+codegen/
