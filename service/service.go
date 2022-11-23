@@ -10,6 +10,7 @@ var MyService Repository
 type Repository interface {
 	Gateway() external.ManagementService
 	User() UserService
+	Event() EventService
 }
 
 func NewService(db *gorm.DB, RuntimePath string) Repository {
@@ -22,14 +23,19 @@ func NewService(db *gorm.DB, RuntimePath string) Repository {
 	return &store{
 		gateway: gatewayManagement,
 		user:    NewUserService(db),
+		event:   NewEventService(db),
 	}
 }
 
 type store struct {
 	gateway external.ManagementService
 	user    UserService
+	event   EventService
 }
 
+func (c *store) Event() EventService {
+	return c.event
+}
 func (c *store) Gateway() external.ManagementService {
 	return c.gateway
 }
