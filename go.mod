@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.19
 
 require (
-	github.com/IceWhaleTech/CasaOS-Common v0.3.7-5
+	github.com/IceWhaleTech/CasaOS-Common v0.3.8
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/deepmap/oapi-codegen v1.12.2
 	github.com/getkin/kin-openapi v0.108.0
@@ -13,6 +13,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/tidwall/gjson v1.14.1
 	go.uber.org/zap v1.21.0
+	golang.org/x/net v0.1.0
 	gopkg.in/ini.v1 v1.67.0
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.8
@@ -57,7 +58,6 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
-	golang.org/x/net v0.1.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect

@@ -1,4 +1,5 @@
 //go:generate bash -c "mkdir -p codegen/user-service && go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.2 -generate types,server,spec -package codegen api/user-service/openapi.yaml > codegen/user-service/user_service_api.go"
+//go:generate bash -c "mkdir -p codegen/message_bus && go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.2 -package message_bus https://raw.githubusercontent.com/IceWhaleTech/CasaOS-MessageBus/main/api/message_bus/openapi.yaml > codegen/message_bus/api.go"
 package main
 
 import (
@@ -82,6 +83,9 @@ func init() {
 }
 
 func main() {
+
+	go route.EventListen()
+
 	v1Router := route.InitRouter()
 	v2Router := route.InitV2Router()
 	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
