@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
+	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	"go.uber.org/zap"
@@ -40,7 +41,7 @@ func GetDb(dbPath string) *gorm.DB {
 
 	gdb = db
 
-	err = db.AutoMigrate(model2.UserDBModel{})
+	err = db.AutoMigrate(model2.UserDBModel{}, model.EventModel{})
 	if err != nil {
 		logger.Error("check or create db error", zap.Any("error", err))
 	}

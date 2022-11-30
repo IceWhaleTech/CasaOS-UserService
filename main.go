@@ -1,6 +1,9 @@
+//go:generate bash -c "mkdir -p codegen/user-service && go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.2 -generate types,server,spec -package codegen api/user-service/openapi.yaml > codegen/user-service/user_service_api.go"
+//go:generate bash -c "mkdir -p codegen/message_bus && go run github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v1.12.2 -package message_bus https://raw.githubusercontent.com/IceWhaleTech/CasaOS-MessageBus/main/api/message_bus/openapi.yaml > codegen/message_bus/api.go"
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"net"
@@ -9,6 +12,7 @@ import (
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/model"
+	util_http "github.com/IceWhaleTech/CasaOS-Common/utils/http"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -22,6 +26,14 @@ import (
 )
 
 const localhost = "127.0.0.1"
+
+var (
+	//go:embed api/index.html
+	_docHTML string
+
+	//go:embed api/user-service/openapi.yaml
+	_docYAML string
+)
 
 func init() {
 	configFlag := flag.String("c", "", "config address")
@@ -71,20 +83,40 @@ func init() {
 }
 
 func main() {
-	r := route.InitRouter()
+
+	go route.EventListen()
+
+	v1Router := route.InitRouter()
+	v2Router := route.InitV2Router()
+	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
+
+	mux := &util_http.HandlerMultiplexer{
+		HandlerMap: map[string]http.Handler{
+			"v1":  v1Router,
+			"v2":  v2Router,
+			"doc": v2DocRouter,
+		},
+	}
 
 	listener, err := net.Listen("tcp", net.JoinHostPort(localhost, "0"))
 	if err != nil {
 		panic(err)
 	}
 
-	err = service.MyService.Gateway().CreateRoute(&model.Route{
-		Path:   "/v1/users",
-		Target: "http://" + listener.Addr().String(),
-	})
+	apiPaths := []string{
+		"/v1/users",
+		route.V2APIPath,
+		route.V2DocPath,
+	}
+	for _, v := range apiPaths {
+		err = service.MyService.Gateway().CreateRoute(&model.Route{
+			Path:   v,
+			Target: "http://" + listener.Addr().String(),
+		})
 
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if supported, err := daemon.SdNotify(false, daemon.SdNotifyReady); err != nil {
@@ -98,7 +130,7 @@ func main() {
 	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
 
 	s := &http.Server{
-		Handler:           r,
+		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second, // fix G112: Potential slowloris attack (see https://github.com/securego/gosec)
 	}
 
