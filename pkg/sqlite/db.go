@@ -16,8 +16,8 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
+	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
