@@ -8,7 +8,7 @@ import (
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
-	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user-service"
+	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user_service"
 	v2 "github.com/IceWhaleTech/CasaOS-UserService/route/v2"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3"
