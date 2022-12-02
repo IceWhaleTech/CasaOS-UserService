@@ -36,7 +36,7 @@ func GetDb(dbPath string) *gorm.DB {
 
 	c, _ := db.DB()
 	c.SetMaxIdleConns(10)
-	c.SetMaxOpenConns(100)
+	c.SetMaxOpenConns(1)
 	c.SetConnMaxIdleTime(time.Second * 1000)
 
 	gdb = db
