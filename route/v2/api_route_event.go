@@ -2,19 +2,13 @@ package v2
 
 import (
 	"net/http"
-	"sync"
 
 	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user_service"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/labstack/echo/v4"
 )
 
-var mutex sync.Mutex
-
 func (s *UserService) DeleteEvent(ctx echo.Context, params codegen.EventUuid) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	m := service.MyService.Event().GetEventByUUID(params.String())
 	service.MyService.Event().DeleteEvent(params.String())
 	return ctx.JSON(http.StatusOK, m)
