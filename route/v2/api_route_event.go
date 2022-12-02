@@ -18,6 +18,7 @@ func (s *UserService) GetEvents(ctx echo.Context, params codegen.GetEventsParams
 	list := service.MyService.Event().GetEvents()
 	return ctx.JSON(http.StatusOK, list)
 }
+
 func (s *UserService) DeleteEventBySerial(ctx echo.Context, serial codegen.Serial) error {
 	service.MyService.Event().DeleteEventBySerial(serial)
 	return ctx.JSON(http.StatusOK, serial)
