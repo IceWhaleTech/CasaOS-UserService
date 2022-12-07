@@ -70,4 +70,5 @@ func EventListen() {
 			// logger.Info("info", zap.Any("写入信息", string(output)))
 		}
 	}
+	logger.Error("error when try to connect to message bus")
 }
