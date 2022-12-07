@@ -3,7 +3,7 @@ package route
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,7 +18,7 @@ import (
 )
 
 func EventListen() {
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1000; i++ {
 
 		messageBusUrl, err := external.GetMessageBusAddress(config.CommonInfo.RuntimePath)
 		if err != nil {
@@ -29,28 +29,29 @@ func EventListen() {
 		wsURL := fmt.Sprintf("ws://%s/event/%s", strings.ReplaceAll(messageBusUrl, "http://", ""), "local-storage")
 		ws, err := websocket.Dial(wsURL, "", "http://localhost")
 		if err != nil {
-			logger.Error("connect websocket err", zap.Any("error", err))
-			time.Sleep(time.Second * 5)
+			logger.Error("connect websocket err"+strconv.Itoa(i), zap.Any("error", err))
+			time.Sleep(time.Second * 1)
 			continue
 		}
 		defer ws.Close()
 
-		log.Println("subscribed to", wsURL)
+		logger.Info("subscribed to", zap.Any("url", wsURL))
 		for {
 
 			msg := make([]byte, 1024)
 			n, err := ws.Read(msg)
 			if err != nil {
-				log.Fatalln(err.Error())
+				logger.Error("err", zap.Any("err", err.Error()))
 			}
 
 			var event message_bus.Event
 
 			if err := json.Unmarshal(msg[:n], &event); err != nil {
-				log.Println(err.Error())
+				logger.Error("err", zap.Any("err", err.Error()))
 			}
 			propertiesStr, err := json.Marshal(event.Properties)
 			if err != nil {
+				logger.Error("marshal error", zap.Any("err", err.Error()), zap.Any("event", event))
 				continue
 			}
 			model := model.EventModel{
@@ -59,12 +60,14 @@ func EventListen() {
 				Properties: string(propertiesStr),
 				UUID:       *event.Uuid,
 			}
+			logger.Info("write to database", zap.Any("model", model))
 			service.MyService.Event().CreateEvemt(model)
-			output, err := json.MarshalIndent(event, "", "  ")
-			if err != nil {
-				log.Println(err.Error())
-			}
-			log.Println(string(output))
+			// logger.Info("info", zap.Any("写入信息1", model))
+			// output, err := json.MarshalIndent(event, "", "  ")
+			// if err != nil {
+			// 	logger.Error("err", zap.Any("err", err.Error()))
+			// }
+			// logger.Info("info", zap.Any("写入信息", string(output)))
 		}
 	}
 }

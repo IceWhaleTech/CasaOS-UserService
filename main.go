@@ -83,7 +83,6 @@ func init() {
 }
 
 func main() {
-	go route.EventListen()
 
 	v1Router := route.InitRouter()
 	v2Router := route.InitV2Router()
@@ -125,7 +124,7 @@ func main() {
 	} else {
 		logger.Info("This process is not running as a systemd service.")
 	}
-
+	go route.EventListen()
 	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
 
 	s := &http.Server{

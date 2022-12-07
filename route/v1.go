@@ -13,7 +13,7 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.Cors())
-	r.Use(middleware.WriteLog())
+	//r.Use(middleware.WriteLog())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// check if environment variable is set

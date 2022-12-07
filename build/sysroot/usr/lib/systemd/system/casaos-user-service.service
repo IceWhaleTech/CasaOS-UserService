@@ -1,5 +1,4 @@
 [Unit]
-After=casaos-gateway.service
 After=casaos-message-bus.service
 ConditionFileNotEmpty=/etc/casaos/user-service.conf
 Description=CasaOS User Service
