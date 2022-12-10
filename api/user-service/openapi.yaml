@@ -1,0 +1,211 @@
+openapi: 3.0.3
+
+info:
+  title: Casaos User Service API
+  version: v2
+  description: |
+    <picture>
+         <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_dark_night_800px.png">
+         <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_twilight_blue_800px.png">
+         <img alt="CasaOS" src="https://raw.githubusercontent.com/IceWhaleTech/logo/main/casaos/casaos_banner_twilight_blue_800px.png">
+     </picture>
+     This is the API for the Casaos User Service.
+     It is used to manage users and their access to Casaos services.
+
+servers:
+  - url: /v2/users
+    description: Casaos User Service API
+
+tags:
+  - name: event
+    description: Event related operations
+security:
+  - access_token: []
+
+paths:
+  /event/{event_uuid}:
+    delete:
+      summary: Delete an event
+      description: Delete an event
+      operationId: deleteEvent
+      tags:
+        - event
+      parameters:
+        - $ref: "#/components/parameters/event_uuid"
+
+      responses:
+        "200":
+          description: Event deleted
+          $ref: "#/components/responses/DeleteEventOK"
+        "401":
+          description: Event not found
+
+        "404":
+          description: Event not found
+          $ref: "#/components/responses/ResponseNotFound"
+        "500":
+          $ref: "#/components/responses/BadResponse"
+          description: Internal server error
+  /events:
+    get:
+      summary: Get all events
+      description: Get all events
+      operationId: getEvents
+      tags:
+        - event
+      parameters:
+        - name: form
+          in: query
+          description: Form of the events to get
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: "2021-01-01T00:00:00Z"
+      responses:
+        "200":
+          description: Events found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "500":
+          description: Internal server error
+          $ref: "#/components/responses/BadResponse"
+  /event/local_storage/{serial}:
+    delete:
+      summary: Delete an event
+      description: Delete an event
+      operationId: deleteEventBySerial
+      tags:
+        - event
+      parameters:
+        - $ref: "#/components/parameters/serial"
+      responses:
+        "200":
+          description: Event deleted
+          $ref: "#/components/responses/OKResponse"
+        "401":
+          description: Event not found
+        "404":
+          description: Event not found
+          $ref: "#/components/responses/ResponseNotFound"
+        "500":
+          $ref: "#/components/responses/BadResponse"
+          description: Internal server error
+components:
+  securitySchemes:
+    access_token:
+      type: apiKey
+      in: header
+      name: Authorization
+  parameters:
+    serial:
+      name: serial
+      in: path
+      description: Serial of the local storage
+      required: true
+      schema:
+        type: string
+        example: "1234567890"
+    event_uuid:
+      name: event_uuid
+      in: path
+      description: UUID of the event to get
+      required: true
+      schema:
+        type: string
+        format: uuid
+        example: 123e4567-e89b-12d3-a456-426655440000
+  responses:
+    OKResponse:
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: "#/components/schemas/BaseResponse"
+    DeleteEventOK:
+      description: Event deleted
+      content:
+        application/json:
+          schema:
+            type: object
+            $ref: "#/components/schemas/Event"
+    BadResponse:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BaseResponse"
+    ResponseNotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/BaseResponse"
+          example:
+            message: "Not Found"
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        message:
+          readOnly: true
+          type: string
+          example: "Bad request"
+          description: Error message
+    Property:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the property
+        value:
+          type: string
+          description: Value of the property
+    Event:
+      type: object
+      required:
+        - "sourceID"
+        - "name"
+        - "properties"
+      properties:
+        event_uuid:
+          type: string
+          format: uuid
+          description: UUID of the event
+        sourceID:
+          type: string
+          description: associated source id
+          example: "local-storage"
+        name:
+          type: string
+          description: event name
+          example: "local-storage:disk:added"
+        properties:
+          type: array
+          description: event properties
+          items:
+            $ref: "#/components/schemas/Property"
+          example:
+            - name: local-storage:vendor
+              value: SanDisk
+            - name: local-storage:model
+              value: Cruzer
+            - name: local-storage:uuid
+              value: 442e0e5b-9d3e-4fe8-b46f-9c4141fdecd7
+            - name: casaos-ui:type
+              value: notification-style-2
+            - name: casaos-ui:title
+              value: "New disk found"
+            - name: casaos-ui:icon-1
+              value: casaos-icon-disk
+            - name: casaos-ui:message-1
+              value: "A new disk, SanDisk Cruzer, is added."
+        timestamp:
+          type: string
+          description: timestamp this event took place
+          format: date-time

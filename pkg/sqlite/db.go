@@ -13,10 +13,11 @@ import (
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
+	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
+	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -35,12 +36,12 @@ func GetDb(dbPath string) *gorm.DB {
 
 	c, _ := db.DB()
 	c.SetMaxIdleConns(10)
-	c.SetMaxOpenConns(100)
+	c.SetMaxOpenConns(1)
 	c.SetConnMaxIdleTime(time.Second * 1000)
 
 	gdb = db
 
-	err = db.AutoMigrate(model2.UserDBModel{})
+	err = db.AutoMigrate(model2.UserDBModel{}, model.EventModel{})
 	if err != nil {
 		logger.Error("check or create db error", zap.Any("error", err))
 	}

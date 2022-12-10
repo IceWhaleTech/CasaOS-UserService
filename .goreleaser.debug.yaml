@@ -12,9 +12,9 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CC=x86_64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
@@ -28,9 +28,9 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CC=aarch64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
@@ -44,9 +44,9 @@ builds:
     binary: build/sysroot/usr/bin/casaos-user-service
     env:
       - CC=arm-linux-gnueabihf-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
@@ -63,9 +63,9 @@ builds:
     main: ./cmd/migration-tool
     env:
       - CC=x86_64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
@@ -80,9 +80,9 @@ builds:
     main: ./cmd/migration-tool
     env:
       - CC=aarch64-linux-gnu-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
@@ -97,9 +97,9 @@ builds:
     main: ./cmd/migration-tool
     env:
       - CC=arm-linux-gnueabihf-gcc
+    gcflags:
+      - all=-N -l
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
     tags:
       - musl
