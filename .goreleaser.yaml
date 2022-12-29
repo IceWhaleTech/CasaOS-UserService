@@ -10,9 +10,14 @@ before:
 builds:
   - id: casaos-user-service-amd64
     binary: build/sysroot/usr/bin/casaos-user-service
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     env:
       - CC=x86_64-linux-gnu-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
@@ -26,9 +31,14 @@ builds:
       - amd64
   - id: casaos-user-service-arm64
     binary: build/sysroot/usr/bin/casaos-user-service
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     env:
       - CC=aarch64-linux-gnu-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
@@ -42,9 +52,14 @@ builds:
       - arm64
   - id: casaos-user-service-arm-7
     binary: build/sysroot/usr/bin/casaos-user-service
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     env:
       - CC=arm-linux-gnueabihf-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
@@ -60,10 +75,15 @@ builds:
       - "7"
   - id: casaos-user-service-migration-tool-amd64
     binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     main: ./cmd/migration-tool
     env:
       - CC=x86_64-linux-gnu-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
@@ -77,10 +97,15 @@ builds:
       - amd64
   - id: casaos-user-service-migration-tool-arm64
     binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     main: ./cmd/migration-tool
     env:
       - CC=aarch64-linux-gnu-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
@@ -94,10 +119,15 @@ builds:
       - arm64
   - id: casaos-user-service-migration-tool-arm-7
     binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
+    hooks:
+      post:
+        - upx --best --lzma -v --no-progress "{{ .Path }}"
     main: ./cmd/migration-tool
     env:
       - CC=arm-linux-gnueabihf-gcc
     ldflags:
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
       - -s
       - -w
       - -extldflags "-static"
