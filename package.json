@@ -9,7 +9,7 @@
     "publish": "npm publish --access public",
     "start": "yarn generate:ts && yarn build"
   },
-  "homepage": "https://github.com/IceWhaleTech/CasaOS-AppManagement#readme",
+  "homepage": "https://github.com/IceWhaleTech/CasaOS-UserService#readme",
   "description": "Casaos-Localstorage Typescript+Axios SDK",
   "keywords": [
     "CasaOS-UserService",
@@ -32,5 +32,5 @@
     "typescript": "^4.9.5"
   },
   "author": "casaos",
-  "license": "MIT"
+  "license": "Apache-2.0"
 }
