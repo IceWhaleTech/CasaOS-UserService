@@ -9,9 +9,11 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/IceWhaleTech/CasaOS-Common/external"
 	"github.com/IceWhaleTech/CasaOS-Common/model"
 	util_http "github.com/IceWhaleTech/CasaOS-Common/utils/http"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
@@ -131,6 +133,12 @@ func main() {
 		}
 	}
 
+	// write address file
+	addressFilePath, err := writeAddressFile(config.CommonInfo.RuntimePath, external.UserServiceAddressFilename, "http://"+listener.Addr().String())
+	if err != nil {
+		panic(err)
+	}
+
 	if supported, err := daemon.SdNotify(false, daemon.SdNotifyReady); err != nil {
 		logger.Error("Failed to notify systemd that user service is ready", zap.Any("error", err))
 	} else if supported {
@@ -139,7 +147,7 @@ func main() {
 		logger.Info("This process is not running as a systemd service.")
 	}
 	go route.EventListen()
-	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
+	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()), zap.String("filepath", addressFilePath))
 
 	s := &http.Server{
 		Handler:           mux,
@@ -150,4 +158,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func writeAddressFile(runtimePath string, filename string, address string) (string, error) {
+	err := os.MkdirAll(runtimePath, 0o755)
+	if err != nil {
+		return "", err
+	}
+
+	filepath := filepath.Join(runtimePath, filename)
+	return filepath, os.WriteFile(filepath, []byte(address), 0o600)
 }
