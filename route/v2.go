@@ -1,6 +1,7 @@
 package route
 
 import (
+	"crypto/ecdsa"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user_service"
 	v2 "github.com/IceWhaleTech/CasaOS-UserService/route/v2"
+	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -63,7 +65,10 @@ func InitV2Router() http.Handler {
 			return c.RealIP() == "::1" || c.RealIP() == "127.0.0.1"
 		},
 		ParseTokenFunc: func(token string, c echo.Context) (interface{}, error) {
-			valid, claims, err := jwt.Validate(token)
+			valid, claims, err := jwt.Validate(token, func() *ecdsa.PublicKey {
+				_, publicKey := service.MyService.User().GetKeyPair()
+				return publicKey
+			})
 			if err != nil || !valid {
 				return nil, echo.ErrUnauthorized
 			}

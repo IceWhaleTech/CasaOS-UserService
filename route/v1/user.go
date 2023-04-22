@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"crypto/ecdsa"
 	json2 "encoding/json"
 	"io"
 	"net/http"
@@ -656,7 +657,10 @@ func PostUserRefreshToken(c *gin.Context) {
 
 	privateKey, _ := service.MyService.User().GetKeyPair()
 
-	claims, err := jwt.ParseToken(refresh)
+	claims, err := jwt.ParseToken(refresh, func() *ecdsa.PublicKey {
+		_, publicKey := service.MyService.User().GetKeyPair()
+		return publicKey
+	})
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE), Data: err.Error()})
 		return

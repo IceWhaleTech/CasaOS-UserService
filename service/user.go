@@ -120,8 +120,6 @@ func NewUserService(db *gorm.DB) UserService {
 		return nil
 	}
 
-	jwt.PublicKey = publicKey
-
 	return &userService{
 		privateKey: privateKey,
 		publicKey:  publicKey,

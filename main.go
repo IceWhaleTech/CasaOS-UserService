@@ -97,7 +97,9 @@ func main() {
 	v2Router := route.InitV2Router()
 	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
 
-	jswkJSON, err := jwt.GenerateJwksJSON(jwt.PublicKey)
+	_, publicKey := service.MyService.User().GetKeyPair()
+
+	jswkJSON, err := jwt.GenerateJwksJSON(publicKey)
 	if err != nil {
 		panic(err)
 	}
