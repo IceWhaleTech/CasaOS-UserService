@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"crypto/ecdsa"
 	json2 "encoding/json"
 	"io"
 	"net/http"
@@ -109,9 +110,23 @@ func PostUserLogin(c *gin.Context) {
 			model.Result{Success: common_err.PWD_INVALID, Message: common_err.GetMsg(common_err.PWD_INVALID)})
 		return
 	}
+
+	privateKey, _ := service.MyService.User().GetKeyPair()
+
 	token := system_model.VerifyInformation{}
-	token.AccessToken = jwt.GetAccessToken(user.Username, user.Password, user.Id)
-	token.RefreshToken = jwt.GetRefreshToken(user.Username, user.Password, user.Id)
+
+	accessToken, err := jwt.GetAccessToken(user.Username, privateKey, user.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.Result{Success: common_err.SERVICE_ERROR, Message: err.Error()})
+	}
+	token.AccessToken = accessToken
+
+	refreshToken, err := jwt.GetRefreshToken(user.Username, privateKey, user.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.Result{Success: common_err.SERVICE_ERROR, Message: err.Error()})
+	}
+	token.RefreshToken = refreshToken
+
 	token.ExpiresAt = time.Now().Add(3 * time.Hour * time.Duration(1)).Unix()
 	data := make(map[string]interface{}, 2)
 	user.Password = ""
@@ -639,20 +654,41 @@ func PostUserRefreshToken(c *gin.Context) {
 	js := make(map[string]string)
 	c.ShouldBind(&js)
 	refresh := js["refresh_token"]
-	claims, err := jwt.ParseToken(refresh, true)
+
+	privateKey, _ := service.MyService.User().GetKeyPair()
+
+	claims, err := jwt.ParseToken(
+		refresh,
+		func() (*ecdsa.PublicKey, error) {
+			_, publicKey := service.MyService.User().GetKeyPair()
+			return publicKey, nil
+		})
 	if err != nil {
-		c.JSON(common_err.CLIENT_ERROR, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE), Data: err.Error()})
+		c.JSON(http.StatusUnauthorized, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE), Data: err.Error()})
 		return
 	}
 	if !claims.VerifyExpiresAt(time.Now(), true) || !claims.VerifyIssuer("refresh", true) {
-		c.JSON(common_err.CLIENT_ERROR, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE)})
+		c.JSON(http.StatusUnauthorized, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE)})
 		return
 	}
-	newToken := jwt.GetAccessToken(claims.Username, claims.Password, claims.ID)
-	verifyInfo := system_model.VerifyInformation{}
-	verifyInfo.AccessToken = newToken
-	verifyInfo.RefreshToken = jwt.GetRefreshToken(claims.Username, claims.Password, claims.ID)
-	verifyInfo.ExpiresAt = time.Now().Add(3 * time.Hour * time.Duration(1)).Unix()
+
+	newAccessToken, err := jwt.GetAccessToken(claims.Username, privateKey, claims.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.Result{Success: common_err.SERVICE_ERROR, Message: err.Error()})
+		return
+	}
+
+	newRefreshToken, err := jwt.GetRefreshToken(claims.Username, privateKey, claims.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, model.Result{Success: common_err.SERVICE_ERROR, Message: err.Error()})
+		return
+	}
+
+	verifyInfo := system_model.VerifyInformation{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+		ExpiresAt:    time.Now().Add(3 * time.Hour).Unix(),
+	}
 
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS), Data: verifyInfo})
 }

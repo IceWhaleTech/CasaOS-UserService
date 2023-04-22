@@ -1,11 +1,13 @@
 package route
 
 import (
+	"crypto/ecdsa"
 	"os"
 
 	"github.com/IceWhaleTech/CasaOS-Common/middleware"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	v1 "github.com/IceWhaleTech/CasaOS-UserService/route/v1"
+	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +15,7 @@ import (
 func InitRouter() *gin.Engine {
 	r := gin.Default()
 	r.Use(middleware.Cors())
-	//r.Use(middleware.WriteLog())
+	// r.Use(middleware.WriteLog())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// check if environment variable is set
@@ -34,7 +36,12 @@ func InitRouter() *gin.Engine {
 
 	v1Group := r.Group("/v1")
 
-	v1Group.Use(jwt.JWT())
+	v1Group.Use(jwt.JWT(
+		func() (*ecdsa.PublicKey, error) {
+			_, publicKey := service.MyService.User().GetKeyPair()
+			return publicKey, nil
+		},
+	))
 	{
 		v1UsersGroup := v1Group.Group("/users")
 		v1UsersGroup.Use()

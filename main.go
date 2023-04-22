@@ -9,10 +9,14 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/IceWhaleTech/CasaOS-Common/external"
 	"github.com/IceWhaleTech/CasaOS-Common/model"
 	util_http "github.com/IceWhaleTech/CasaOS-Common/utils/http"
+	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -93,11 +97,19 @@ func main() {
 	v2Router := route.InitV2Router()
 	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
 
+	_, publicKey := service.MyService.User().GetKeyPair()
+
+	jswkJSON, err := jwt.GenerateJwksJSON(publicKey)
+	if err != nil {
+		panic(err)
+	}
+
 	mux := &util_http.HandlerMultiplexer{
 		HandlerMap: map[string]http.Handler{
-			"v1":  v1Router,
-			"v2":  v2Router,
-			"doc": v2DocRouter,
+			"v1":                                    v1Router,
+			"v2":                                    v2Router,
+			"doc":                                   v2DocRouter,
+			strings.SplitN(jwt.JWKSPath, "/", 2)[0]: jwt.JWKSHandler(jswkJSON),
 		},
 	}
 
@@ -110,6 +122,7 @@ func main() {
 		"/v1/users",
 		route.V2APIPath,
 		route.V2DocPath,
+		"/" + jwt.JWKSPath,
 	}
 	for _, v := range apiPaths {
 		err = service.MyService.Gateway().CreateRoute(&model.Route{
@@ -122,6 +135,12 @@ func main() {
 		}
 	}
 
+	// write address file
+	addressFilePath, err := writeAddressFile(config.CommonInfo.RuntimePath, external.UserServiceAddressFilename, "http://"+listener.Addr().String())
+	if err != nil {
+		panic(err)
+	}
+
 	if supported, err := daemon.SdNotify(false, daemon.SdNotifyReady); err != nil {
 		logger.Error("Failed to notify systemd that user service is ready", zap.Any("error", err))
 	} else if supported {
@@ -130,7 +149,7 @@ func main() {
 		logger.Info("This process is not running as a systemd service.")
 	}
 	go route.EventListen()
-	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()))
+	logger.Info("User service is listening...", zap.Any("address", listener.Addr().String()), zap.String("filepath", addressFilePath))
 
 	s := &http.Server{
 		Handler:           mux,
@@ -141,4 +160,14 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func writeAddressFile(runtimePath string, filename string, address string) (string, error) {
+	err := os.MkdirAll(runtimePath, 0o755)
+	if err != nil {
+		return "", err
+	}
+
+	filepath := filepath.Join(runtimePath, filename)
+	return filepath, os.WriteFile(filepath, []byte(address), 0o600)
 }
