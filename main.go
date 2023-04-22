@@ -9,10 +9,12 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/IceWhaleTech/CasaOS-Common/model"
 	util_http "github.com/IceWhaleTech/CasaOS-Common/utils/http"
+	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -93,11 +95,17 @@ func main() {
 	v2Router := route.InitV2Router()
 	v2DocRouter := route.InitV2DocRouter(_docHTML, _docYAML)
 
+	jswkJSON, err := jwt.GenerateJwksJSON(jwt.PublicKey)
+	if err != nil {
+		panic(err)
+	}
+
 	mux := &util_http.HandlerMultiplexer{
 		HandlerMap: map[string]http.Handler{
-			"v1":  v1Router,
-			"v2":  v2Router,
-			"doc": v2DocRouter,
+			"v1":                                    v1Router,
+			"v2":                                    v2Router,
+			"doc":                                   v2DocRouter,
+			strings.SplitN(jwt.JWKSPath, "/", 2)[0]: jwt.JWKSHandler(jswkJSON),
 		},
 	}
 
@@ -110,6 +118,7 @@ func main() {
 		"/v1/users",
 		route.V2APIPath,
 		route.V2DocPath,
+		"/" + jwt.JWKSPath,
 	}
 	for _, v := range apiPaths {
 		err = service.MyService.Gateway().CreateRoute(&model.Route{

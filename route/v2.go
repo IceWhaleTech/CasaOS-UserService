@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user_service"
 	v2 "github.com/IceWhaleTech/CasaOS-UserService/route/v2"
@@ -64,8 +63,8 @@ func InitV2Router() http.Handler {
 			return c.RealIP() == "::1" || c.RealIP() == "127.0.0.1"
 		},
 		ParseTokenFunc: func(token string, c echo.Context) (interface{}, error) {
-			claims, code := jwt.Validate(token)
-			if code != common_err.SUCCESS {
+			valid, claims, err := jwt.Validate(token)
+			if err != nil || !valid {
 				return nil, echo.ErrUnauthorized
 			}
 
