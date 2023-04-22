@@ -657,10 +657,12 @@ func PostUserRefreshToken(c *gin.Context) {
 
 	privateKey, _ := service.MyService.User().GetKeyPair()
 
-	claims, err := jwt.ParseToken(refresh, func() *ecdsa.PublicKey {
-		_, publicKey := service.MyService.User().GetKeyPair()
-		return publicKey
-	})
+	claims, err := jwt.ParseToken(
+		refresh,
+		func() (*ecdsa.PublicKey, error) {
+			_, publicKey := service.MyService.User().GetKeyPair()
+			return publicKey, nil
+		})
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, model.Result{Success: common_err.VERIFICATION_FAILURE, Message: common_err.GetMsg(common_err.VERIFICATION_FAILURE), Data: err.Error()})
 		return

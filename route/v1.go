@@ -36,10 +36,12 @@ func InitRouter() *gin.Engine {
 
 	v1Group := r.Group("/v1")
 
-	v1Group.Use(jwt.JWT(func() *ecdsa.PublicKey {
-		_, publicKey := service.MyService.User().GetKeyPair()
-		return publicKey
-	}))
+	v1Group.Use(jwt.JWT(
+		func() (*ecdsa.PublicKey, error) {
+			_, publicKey := service.MyService.User().GetKeyPair()
+			return publicKey, nil
+		},
+	))
 	{
 		v1UsersGroup := v1Group.Group("/users")
 		v1UsersGroup.Use()
