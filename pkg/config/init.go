@@ -5,35 +5,56 @@ import (
 	"log"
 	"os"
 
+	"github.com/IceWhaleTech/CasaOS-Common/utils/constants"
 	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"gopkg.in/ini.v1"
 )
 
 // models with default values
 
-var CommonInfo = &model.CommonModel{
-	RuntimePath: "/var/run/casaos",
-}
+var (
+	CommonInfo = &model.CommonModel{
+		RuntimePath: constants.DefaultRuntimePath,
+	}
 
-var AppInfo = &model.APPModel{
-	DBPath:       "/var/lib/casaos",
-	UserDataPath: "/var/lib/casaos",
-	LogPath:      "/var/log/casaos",
-	LogSaveName:  "user",
-	LogFileExt:   "log",
-}
+	AppInfo = &model.APPModel{
+		DBPath:       constants.DefaultDataPath,
+		UserDataPath: constants.DefaultDataPath,
+		LogPath:      constants.DefaultLogPath,
+		LogSaveName:  "user",
+		LogFileExt:   "log",
+	}
 
-var Cfg *ini.File
+	Cfg            *ini.File
+	ConfigFilePath string
+)
 
-func InitSetup(config string) {
-	configFilePath := UserServiceConfigFilePath
+func InitSetup(config string, sample string) {
+	ConfigFilePath = UserServiceConfigFilePath
 	if len(config) > 0 {
-		configFilePath = config
+		ConfigFilePath = config
+	}
+
+	// create default config file if not exist
+	if _, err := os.Stat(ConfigFilePath); os.IsNotExist(err) {
+		fmt.Println("config file not exist, create it")
+		// create config file
+		file, err := os.Create(ConfigFilePath)
+		if err != nil {
+			panic(err)
+		}
+		defer file.Close()
+
+		// write default config
+		_, err = file.WriteString(sample)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	var err error
 
-	Cfg, err = ini.Load(configFilePath)
+	Cfg, err = ini.Load(ConfigFilePath)
 	if err != nil {
 		fmt.Printf("Fail to read file: %v", err)
 		os.Exit(1)
