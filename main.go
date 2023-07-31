@@ -40,6 +40,9 @@ var (
 
 	//go:embed api/user-service/openapi.yaml
 	_docYAML string
+
+	//go:embed build/sysroot/etc/casaos/user-service.conf.sample
+	_confSample string
 )
 
 func init() {
@@ -59,7 +62,7 @@ func init() {
 	println("git commit:", commit)
 	println("build date:", date)
 
-	config.InitSetup(*configFlag)
+	config.InitSetup(*configFlag, _confSample)
 
 	logger.LogInit(config.AppInfo.LogPath, config.AppInfo.LogSaveName, config.AppInfo.LogFileExt)
 
