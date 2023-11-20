@@ -1,5 +1,5 @@
 //go:generate bash -c "mkdir -p codegen/user_service && go run github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.0.0 -generate types,server,spec -package codegen api/user-service/openapi.yaml > codegen/user_service/user_service_api.go"
-//go:generate bash -c "mkdir -p codegen/message_bus && go run github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.0.0 -package message_bus https://raw.staticdn.net/IceWhaleTech/CasaOS-MessageBus/main/api/message_bus/openapi.yaml > codegen/message_bus/api.go"
+//go:generate bash -c "mkdir -p codegen/message_bus && go run github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@v2.0.0 -package message_bus https://raw.githubusercontent.com/IceWhaleTech/CasaOS-MessageBus/main/api/message_bus/openapi.yaml > codegen/message_bus/api.go"
 package main
 
 import (
