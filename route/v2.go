@@ -11,7 +11,7 @@ import (
 	codegen "github.com/IceWhaleTech/CasaOS-UserService/codegen/user_service"
 	v2 "github.com/IceWhaleTech/CasaOS-UserService/route/v2"
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
-	"github.com/deepmap/oapi-codegen/pkg/middleware"
+	middleware "github.com/oapi-codegen/echo-middleware"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/labstack/echo/v4"
