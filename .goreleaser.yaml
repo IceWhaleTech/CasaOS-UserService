@@ -31,9 +31,9 @@ builds:
       - amd64
   - id: casaos-user-service-arm64
     binary: build/sysroot/usr/bin/casaos-user-service
-    hooks:
-      post:
-        - upx --best --lzma -v --no-progress "{{ .Path }}"
+    # hooks:
+    #   post:
+    #     - upx --best --lzma -v --no-progress "{{ .Path }}"
     env:
       - CC=aarch64-linux-gnu-gcc
     ldflags:
@@ -97,9 +97,9 @@ builds:
       - amd64
   - id: casaos-user-service-migration-tool-arm64
     binary: build/sysroot/usr/bin/casaos-user-service-migration-tool
-    hooks:
-      post:
-        - upx --best --lzma -v --no-progress "{{ .Path }}"
+    # hooks:
+    #   post:
+    #     - upx --best --lzma -v --no-progress "{{ .Path }}"
     main: ./cmd/migration-tool
     env:
       - CC=aarch64-linux-gnu-gcc
