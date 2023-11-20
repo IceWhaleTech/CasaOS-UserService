@@ -142,24 +142,21 @@ builds:
     goarm:
       - "7"
 archives:
-  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-v{{ .Version }}"
-    id: casaos-user-service
+  - name_template: >-
+      {{ .Os }}-{{- if eq .Arch "arm" }}arm-7{{- else }}{{ .Arch }}{{- end }}-{{ .ProjectName }}-v{{ .Version }}
     builds:
       - casaos-user-service-amd64
       - casaos-user-service-arm64
       - casaos-user-service-arm-7
-    replacements:
-      arm: arm-7
     files:
       - build/**/*
-  - name_template: "{{ .Os }}-{{ .Arch }}-{{ .ProjectName }}-migration-tool-v{{ .Version }}"
+  - name_template: >-
+      {{ .Os }}-{{- if eq .Arch "arm" }}arm-7{{- else }}{{ .Arch }}{{- end }}-{{ .ProjectName }}-v{{ .Version }}
     id: casaos-user-service-migration-tool
     builds:
       - casaos-user-service-migration-tool-amd64
       - casaos-user-service-migration-tool-arm64
       - casaos-user-service-migration-tool-arm-7
-    replacements:
-      arm: arm-7
     files:
       - build/sysroot/etc/**/*
 checksum:
