@@ -150,7 +150,7 @@ func PostUserLogin(c *gin.Context) {
 // @Param file formData file true "用户头像"
 // @Security ApiKeyAuth
 // @Success 200 {string} string "ok"
-// @Router /user/avatar [put]
+// @Router /users/avatar [put]
 func PutUserAvatar(c *gin.Context) {
 	id := c.GetHeader("user_id")
 	user := service.MyService.User().GetUserInfoById(id)
