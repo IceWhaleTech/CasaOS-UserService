@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.20
 
 require (
-	github.com/IceWhaleTech/CasaOS-Common v0.4.8-alpha2
+	github.com/IceWhaleTech/CasaOS-Common v0.4.8-alpha3
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/getkin/kin-openapi v0.117.0
@@ -52,7 +52,7 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -73,7 +73,7 @@ require (
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
-	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
