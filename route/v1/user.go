@@ -2,8 +2,12 @@ package v1
 
 import (
 	"crypto/ecdsa"
+	"encoding/base64"
 	json2 "encoding/json"
+	"image"
+	"image/png"
 	"io"
+	"log"
 	"net/http"
 	url2 "net/url"
 	"os"
@@ -15,6 +19,7 @@ import (
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
+	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/model/system_model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -23,6 +28,7 @@ import (
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
+	"go.uber.org/zap"
 
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/gin-gonic/gin"
@@ -159,18 +165,35 @@ func PutUserAvatar(c *gin.Context) {
 			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
 		return
 	}
-	f, err := c.FormFile("file")
+	json := make(map[string]string)
+	c.ShouldBind(&json)
+
+	data := json["file"]
+	imgBase64 := strings.Replace(data, "data:image/png;base64,", "", 1)
+	decodeData, err := base64.StdEncoding.DecodeString(string(imgBase64))
 	if err != nil {
-		c.JSON(common_err.CLIENT_ERROR,
-			model.Result{Success: common_err.CLIENT_ERROR, Message: common_err.GetMsg(common_err.CLIENT_ERROR), Data: err.Error()})
-		return
+		panic(err)
 	}
-	if len(user.Avatar) > 0 {
-		os.RemoveAll(config.AppInfo.UserDataPath + "/" + id + "/" + user.Avatar)
+
+	// 将字节数组转为图片
+	img, _, err := image.Decode(strings.NewReader(string(decodeData)))
+	if err != nil {
+		log.Fatal(err)
 	}
-	ext := filepath.Ext(f.Filename)
+
+	ext := ".png"
 	avatarPath := config.AppInfo.UserDataPath + "/" + id + "/avatar" + ext
-	c.SaveUploadedFile(f, avatarPath)
+	os.Remove(avatarPath)
+	outFile, err := os.Create(avatarPath)
+	if err != nil {
+		logger.Error("create file error", zap.Error(err))
+	}
+	defer outFile.Close()
+
+	err = png.Encode(outFile, img)
+	if err != nil {
+		logger.Error("encode error", zap.Error(err))
+	}
 	user.Avatar = avatarPath
 	service.MyService.User().UpdateUser(user)
 	c.JSON(http.StatusOK,
