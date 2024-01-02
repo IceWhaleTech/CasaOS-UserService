@@ -172,7 +172,8 @@ func PutUserAvatar(c *gin.Context) {
 	imgBase64 := strings.Replace(data, "data:image/png;base64,", "", 1)
 	decodeData, err := base64.StdEncoding.DecodeString(string(imgBase64))
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusInternalServerError, model.Result{Success: common_err.SERVICE_ERROR, Message: err.Error()})
+		return
 	}
 
 	// 将字节数组转为图片
@@ -201,6 +202,35 @@ func PutUserAvatar(c *gin.Context) {
 			Success: common_err.SUCCESS,
 			Message: common_err.GetMsg(common_err.SUCCESS),
 			Data:    user,
+		})
+}
+
+// @Summary get user head
+// @Produce  application/json
+// @Tags user
+// @Param file formData file true "用户头像"
+// @Security ApiKeyAuth
+// @Success 200 {string} string "ok"
+// @Router /users/avatar [get]
+func GetUserAvatar(c *gin.Context) {
+	id := c.GetHeader("user_id")
+	user := service.MyService.User().GetUserInfoById(id)
+	if user.Id == 0 {
+		c.JSON(common_err.SERVICE_ERROR,
+			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+		return
+	}
+
+	if file.Exists(user.Avatar) {
+		// @tiger - RESTful 规范下不应该返回文件本身内容，而是返回文件的静态URL，由前端去解析
+		c.Header("Content-Disposition", "attachment; filename*=utf-8''"+url2.PathEscape(path.Base(user.Avatar)))
+		c.File(user.Avatar)
+		return
+	}
+	c.JSON(http.StatusNotFound,
+		model.Result{
+			Success: common_err.SERVICE_ERROR,
+			Message: user.Avatar + " not found",
 		})
 }
 
