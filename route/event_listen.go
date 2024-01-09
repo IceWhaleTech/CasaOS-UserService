@@ -60,7 +60,9 @@ func EventListen() {
 				Properties: string(propertiesStr),
 				UUID:       *event.Uuid,
 			}
-			logger.Info("write to database", zap.Any("model", model))
+			if event.Name == "local-storage:raid_status" {
+				continue
+			}
 			service.MyService.Event().CreateEvemt(model)
 			// logger.Info("info", zap.Any("写入信息1", model))
 			// output, err := json.MarshalIndent(event, "", "  ")
