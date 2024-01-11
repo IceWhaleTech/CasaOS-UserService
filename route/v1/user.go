@@ -228,6 +228,13 @@ func GetUserAvatar(c *gin.Context) {
 		return
 	}
 	user.Avatar = "/usr/share/casaos/www/avatar.svg"
+	if file.Exists(user.Avatar) {
+		c.Header("Content-Disposition", "attachment; filename*=utf-8''"+url2.PathEscape(path.Base(user.Avatar)))
+		c.Header("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, value")
+		c.File(user.Avatar)
+		return
+	}
+	user.Avatar = "/var/lib/casaos/www/avatar.svg"
 	c.Header("Content-Disposition", "attachment; filename*=utf-8''"+url2.PathEscape(path.Base(user.Avatar)))
 	c.Header("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate, value")
 	c.File(user.Avatar)
