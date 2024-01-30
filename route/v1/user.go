@@ -32,6 +32,7 @@ import (
 
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 )
 
 // @Summary register user
@@ -81,6 +82,8 @@ func PostUserRegister(c *gin.Context) {
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS)})
 }
 
+var limiter = rate.NewLimiter(rate.Every(time.Minute/5), 5)
+
 // @Summary login
 // @Produce  application/json
 // @Accept application/json
@@ -90,6 +93,15 @@ func PostUserRegister(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Router /user/login [post]
 func PostUserLogin(c *gin.Context) {
+	if !limiter.Allow() {
+		c.JSON(common_err.TOO_MANY_REQUEST,
+			model.Result{
+				Success: common_err.TOO_MANY_LOGIN_REQUESTS,
+				Message: common_err.GetMsg(common_err.TOO_MANY_LOGIN_REQUESTS),
+			})
+		return
+	}
+
 	json := make(map[string]string)
 	c.ShouldBind(&json)
 
@@ -108,12 +120,12 @@ func PostUserLogin(c *gin.Context) {
 	user := service.MyService.User().GetUserAllInfoByName(username)
 	if user.Id == 0 {
 		c.JSON(common_err.CLIENT_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if user.Password != encryption.GetMD5ByStr(password) {
 		c.JSON(common_err.CLIENT_ERROR,
-			model.Result{Success: common_err.PWD_INVALID, Message: common_err.GetMsg(common_err.PWD_INVALID)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 
@@ -162,7 +174,7 @@ func PutUserAvatar(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	json := make(map[string]string)
@@ -217,7 +229,7 @@ func GetUserAvatar(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 
@@ -255,7 +267,7 @@ func PutUserInfo(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if len(json.Username) > 0 {
@@ -306,7 +318,7 @@ func PutUserPassword(c *gin.Context) {
 	user := service.MyService.User().GetUserAllInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if user.Password != encryption.GetMD5ByStr(oldPwd) {
@@ -339,7 +351,7 @@ func PutUserNick(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(http.StatusOK,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	user.Nickname = Nickname
@@ -367,7 +379,7 @@ func PutUserDesc(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(http.StatusOK,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	user.Description = desc
@@ -411,7 +423,7 @@ func GetUserInfoByUsername(c *gin.Context) {
 	}
 	user := service.MyService.User().GetUserInfoByUserName(username)
 	if user.Id == 0 {
-		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 
@@ -460,7 +472,7 @@ func GetUserCustomConf(c *gin.Context) {
 	//	user := service.MyService.User().GetUserInfoByUsername(Username)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	filePath := config.AppInfo.UserDataPath + "/" + id + "/" + name + ".json"
@@ -489,7 +501,7 @@ func PostUserCustomConf(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	data, _ := io.ReadAll(c.Request.Body)
@@ -526,7 +538,7 @@ func DeleteUserCustomConf(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
 		c.JSON(common_err.SERVICE_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	filePath := config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id) + "/" + name + ".json"
@@ -579,7 +591,7 @@ func PutUserImage(c *gin.Context) {
 
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
-		c.JSON(http.StatusOK, model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+		c.JSON(http.StatusOK, model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	fstat, _ := os.Stat(path)
@@ -631,7 +643,7 @@ func PostUserUploadImage(c *gin.Context) {
 	user := service.MyService.User().GetUserInfoById(id)
 
 	if user.Id == 0 {
-		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if t == "avatar" {
@@ -686,7 +698,7 @@ func DeleteUserImage(c *gin.Context) {
 	}
 	user := service.MyService.User().GetUserInfoById(id)
 	if user.Id == 0 {
-		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+		c.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if !file.Exists(path) {
