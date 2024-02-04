@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -663,6 +664,16 @@ func GetUserImage(c *gin.Context) {
 		return
 	}
 	if !strings.Contains(filePath, config.AppInfo.UserDataPath) {
+		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INSUFFICIENT_PERMISSIONS, Message: common_err.GetMsg(common_err.INSUFFICIENT_PERMISSIONS)})
+		return
+	}
+
+	matched, err := regexp.MatchString(`^/var/lib/casaos/\d`, filePath)
+	if err != nil {
+		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INSUFFICIENT_PERMISSIONS, Message: common_err.GetMsg(common_err.INSUFFICIENT_PERMISSIONS)})
+		return
+	}
+	if !matched {
 		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INSUFFICIENT_PERMISSIONS, Message: common_err.GetMsg(common_err.INSUFFICIENT_PERMISSIONS)})
 		return
 	}
