@@ -659,16 +659,21 @@ func GetUserImage(c *gin.Context) {
 		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INVALID_PARAMS, Message: common_err.GetMsg(common_err.INVALID_PARAMS)})
 		return
 	}
-	if !file.Exists(filePath) {
+	absFilePath, err := filepath.Abs(filepath.Clean(filePath))
+	if err != nil {
+		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INVALID_PARAMS, Message: common_err.GetMsg(common_err.INVALID_PARAMS)})
+		return
+	}
+	if !file.Exists(absFilePath) {
 		c.JSON(http.StatusNotFound, model.Result{Success: common_err.FILE_DOES_NOT_EXIST, Message: common_err.GetMsg(common_err.FILE_DOES_NOT_EXIST)})
 		return
 	}
-	if !strings.Contains(filePath, config.AppInfo.UserDataPath) {
+	if !strings.Contains(absFilePath, config.AppInfo.UserDataPath) {
 		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INSUFFICIENT_PERMISSIONS, Message: common_err.GetMsg(common_err.INSUFFICIENT_PERMISSIONS)})
 		return
 	}
 
-	matched, err := regexp.MatchString(`^/var/lib/casaos/\d`, filePath)
+	matched, err := regexp.MatchString(`^/var/lib/casaos/\d`, absFilePath)
 	if err != nil {
 		c.JSON(http.StatusNotFound, model.Result{Success: common_err.INSUFFICIENT_PERMISSIONS, Message: common_err.GetMsg(common_err.INSUFFICIENT_PERMISSIONS)})
 		return
@@ -678,14 +683,11 @@ func GetUserImage(c *gin.Context) {
 		return
 	}
 
-	fileTmp, _ := os.Open(filePath)
-	defer fileTmp.Close()
-
-	fileName := path.Base(filePath)
+	fileName := path.Base(absFilePath)
 
 	// @tiger - RESTful 规范下不应该返回文件本身内容，而是返回文件的静态URL，由前端去解析
 	c.Header("Content-Disposition", "attachment; filename*=utf-8''"+url2.PathEscape(fileName))
-	c.File(filePath)
+	c.File(absFilePath)
 }
 
 func DeleteUserImage(c *gin.Context) {
