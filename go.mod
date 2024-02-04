@@ -3,7 +3,7 @@ module github.com/IceWhaleTech/CasaOS-UserService
 go 1.20
 
 require (
-	github.com/IceWhaleTech/CasaOS-Common v0.4.8-alpha3
+	github.com/IceWhaleTech/CasaOS-Common v0.4.8-alpha12
 	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/deepmap/oapi-codegen v1.12.4
 	github.com/getkin/kin-openapi v0.117.0

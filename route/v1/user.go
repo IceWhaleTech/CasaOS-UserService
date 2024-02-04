@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"encoding/base64"
 	json2 "encoding/json"
@@ -21,6 +22,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
+	"github.com/IceWhaleTech/CasaOS-UserService/common"
 	"github.com/IceWhaleTech/CasaOS-UserService/model"
 	"github.com/IceWhaleTech/CasaOS-UserService/model/system_model"
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/config"
@@ -506,6 +508,20 @@ func PostUserCustomConf(c *gin.Context) {
 		c.JSON(common_err.SERVICE_ERROR,
 			model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
 		return
+	}
+
+	if name == "system" {
+		dataMap := make(map[string]string, 1)
+		dataMap["system"] = string(data)
+		response, err := service.MyService.MessageBus().PublishEventWithResponse(context.Background(), common.SERVICENAME, "zimaos:user:save_config", dataMap)
+		if err != nil {
+			logger.Error("failed to publish event to message bus", zap.Error(err), zap.Any("event", string(data)))
+			return
+		}
+		if response.StatusCode() != http.StatusOK {
+			logger.Error("failed to publish event to message bus", zap.String("status", response.Status()), zap.Any("response", response))
+		}
+
 	}
 
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS), Data: json2.RawMessage(string(data))})
