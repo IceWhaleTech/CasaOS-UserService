@@ -32,6 +32,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
+	"golang.org/x/time/rate"
 
 	"github.com/IceWhaleTech/CasaOS-UserService/service"
 	"github.com/gin-gonic/gin"
@@ -84,6 +85,8 @@ func PostUserRegister(c *gin.Context) {
 	c.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS)})
 }
 
+var limiter = rate.NewLimiter(rate.Every(time.Minute), 5)
+
 // @Summary login
 // @Produce  application/json
 // @Accept application/json
@@ -93,6 +96,16 @@ func PostUserRegister(c *gin.Context) {
 // @Success 200 {string} string "ok"
 // @Router /user/login [post]
 func PostUserLogin(c *gin.Context) {
+
+	if !limiter.Allow() {
+		c.JSON(common_err.TOO_MANY_REQUEST,
+			model.Result{
+				Success: common_err.TOO_MANY_LOGIN_REQUESTS,
+				Message: common_err.GetMsg(common_err.TOO_MANY_LOGIN_REQUESTS),
+			})
+		return
+	}
+
 	json := make(map[string]string)
 	c.ShouldBind(&json)
 
