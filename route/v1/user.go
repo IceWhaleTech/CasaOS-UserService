@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IceWhaleTech/CasaOS-Common/external"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/common_err"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
@@ -818,6 +819,11 @@ func GetUserStatus(c *gin.Context) {
 		data["key"] = key
 		data["initialized"] = false
 	}
+	gpus, err := external.NvidiaGPUInfoList()
+	if err != nil {
+		logger.Error("NvidiaGPUInfoList error", zap.Error(err))
+	}
+	data["gpus"] = len(gpus)
 	c.JSON(common_err.SUCCESS,
 		model.Result{
 			Success: common_err.SUCCESS,
