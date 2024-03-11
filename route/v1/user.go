@@ -134,6 +134,9 @@ func PostUserLogin(c *gin.Context) {
 		return
 	}
 
+	// clean limit
+	limiter = rate.NewLimiter(rate.Every(time.Minute), 5)
+
 	privateKey, _ := service.MyService.User().GetKeyPair()
 
 	token := system_model.VerifyInformation{}
