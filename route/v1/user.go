@@ -125,7 +125,7 @@ func PostUserLogin(c *gin.Context) {
 	user := service.MyService.User().GetUserAllInfoByName(username)
 	if user.Id == 0 {
 		c.JSON(common_err.CLIENT_ERROR,
-			model.Result{Success: common_err.USER_NOT_EXIST, Message: common_err.GetMsg(common_err.USER_NOT_EXIST)})
+			model.Result{Success: common_err.USER_NOT_EXIST_OR_PWD_INVALID, Message: common_err.GetMsg(common_err.USER_NOT_EXIST_OR_PWD_INVALID)})
 		return
 	}
 	if user.Password != encryption.GetMD5ByStr(password) {
