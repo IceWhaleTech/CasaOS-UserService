@@ -11,6 +11,7 @@ package service
 
 import (
 	"crypto/ecdsa"
+	"errors"
 	"io"
 	"mime/multipart"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
 	"github.com/IceWhaleTech/CasaOS-UserService/service/model"
+	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -26,6 +28,8 @@ import (
 type UserService interface {
 	UpLoadFile(file multipart.File, name string) error
 	CreateUser(m model.UserDBModel) model.UserDBModel
+	RegistrationStatus() (bool, string, error)
+	RegisterInitialUser(key string, user model.UserDBModel) (model.UserDBModel, error)
 	GetUserCount() (userCount int64)
 	UpdateUser(m model.UserDBModel)
 	UpdateUserPassword(m model.UserDBModel)
@@ -40,7 +44,12 @@ type UserService interface {
 	GetKeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey)
 }
 
-var UserRegisterHash = sync.Map{}
+var (
+	registrationMu            sync.Mutex
+	registrationKey           string
+	ErrRegistrationKeyInvalid = errors.New("invalid registration key")
+	ErrAlreadyInitialized     = errors.New("user service already initialized")
+)
 
 type userService struct {
 	privateKey *ecdsa.PrivateKey // keep this private - NEVER expose it!!!
@@ -65,6 +74,51 @@ func (u *userService) GetAllUserName() (list []model.UserDBModel) {
 func (u *userService) CreateUser(m model.UserDBModel) model.UserDBModel {
 	u.db.Create(&m)
 	return m
+}
+
+func (u *userService) RegistrationStatus() (bool, string, error) {
+	registrationMu.Lock()
+	defer registrationMu.Unlock()
+
+	var count int64
+	if err := u.db.Model(&model.UserDBModel{}).Count(&count).Error; err != nil {
+		return false, "", err
+	}
+	if count > 0 {
+		registrationKey = ""
+		return true, "", nil
+	}
+	if registrationKey == "" {
+		registrationKey = uuid.NewV4().String()
+	}
+	return false, registrationKey, nil
+}
+
+func (u *userService) RegisterInitialUser(key string, user model.UserDBModel) (model.UserDBModel, error) {
+	registrationMu.Lock()
+	defer registrationMu.Unlock()
+
+	if key == "" || key != registrationKey {
+		return model.UserDBModel{}, ErrRegistrationKeyInvalid
+	}
+	err := u.db.Transaction(func(tx *gorm.DB) error {
+		var count int64
+		if err := tx.Model(&model.UserDBModel{}).Count(&count).Error; err != nil {
+			return err
+		}
+		if count != 0 {
+			return ErrAlreadyInitialized
+		}
+		return tx.Create(&user).Error
+	})
+	if err != nil {
+		if errors.Is(err, ErrAlreadyInitialized) {
+			registrationKey = ""
+		}
+		return model.UserDBModel{}, err
+	}
+	registrationKey = ""
+	return user, nil
 }
 
 func (u *userService) GetUserCount() (userCount int64) {

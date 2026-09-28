@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/base64"
 	json2 "encoding/json"
+	"errors"
 	"image"
 	"image/png"
 	"io"
@@ -31,7 +32,6 @@ import (
 	"github.com/IceWhaleTech/CasaOS-UserService/pkg/utils/file"
 	model2 "github.com/IceWhaleTech/CasaOS-UserService/service/model"
 	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
@@ -48,11 +48,6 @@ func PostUserRegister(ctx echo.Context) error {
 	username := json["username"]
 	pwd := json["password"]
 	key := json["key"]
-	if _, ok := service.UserRegisterHash.Load(key); !ok {
-		return ctx.JSON(common_err.CLIENT_ERROR,
-			model.Result{Success: common_err.KEY_NOT_EXIST, Message: common_err.GetMsg(common_err.KEY_NOT_EXIST)})
-	}
-
 	if len(username) == 0 || len(pwd) == 0 {
 		return ctx.JSON(common_err.CLIENT_ERROR,
 			model.Result{Success: common_err.INVALID_PARAMS, Message: common_err.GetMsg(common_err.INVALID_PARAMS)})
@@ -72,12 +67,21 @@ func PostUserRegister(ctx echo.Context) error {
 	user.Password = encryption.GetMD5ByStr(pwd)
 	user.Role = "admin"
 
-	user = service.MyService.User().CreateUser(user)
-	if user.Id == 0 {
+	var err error
+	user, err = service.MyService.User().RegisterInitialUser(key, user)
+	if errors.Is(err, service.ErrRegistrationKeyInvalid) {
+		return ctx.JSON(common_err.CLIENT_ERROR,
+			model.Result{Success: common_err.KEY_NOT_EXIST, Message: common_err.GetMsg(common_err.KEY_NOT_EXIST)})
+	}
+	if errors.Is(err, service.ErrAlreadyInitialized) {
+		return ctx.JSON(http.StatusForbidden,
+			model.Result{Success: common_err.USER_EXIST, Message: common_err.GetMsg(common_err.USER_EXIST)})
+	}
+	if err != nil {
+		logger.Error("register initial user error", zap.Error(err))
 		return ctx.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
 	}
 	file.MkDir(config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id))
-	service.UserRegisterHash.Delete(key)
 	return ctx.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS)})
 }
 
@@ -753,12 +757,16 @@ func DeleteUserAll(ctx echo.Context) error {
 func GetUserStatus(ctx echo.Context) error {
 	data := make(map[string]interface{}, 2)
 
-	if service.MyService.User().GetUserCount() > 0 {
+	initialized, key, err := service.MyService.User().RegistrationStatus()
+	if err != nil {
+		logger.Error("get registration status error", zap.Error(err))
+		return ctx.JSON(http.StatusInternalServerError,
+			model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
+	}
+	if initialized {
 		data["initialized"] = true
 		data["key"] = ""
 	} else {
-		key := uuid.NewV4().String()
-		service.UserRegisterHash.Store(key, key)
 		data["key"] = key
 		data["initialized"] = false
 	}
