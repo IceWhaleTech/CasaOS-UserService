@@ -14,6 +14,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"sync"
 
 	"github.com/IceWhaleTech/CasaOS-Common/utils/jwt"
 	"github.com/IceWhaleTech/CasaOS-Common/utils/logger"
@@ -39,7 +40,7 @@ type UserService interface {
 	GetKeyPair() (*ecdsa.PrivateKey, *ecdsa.PublicKey)
 }
 
-var UserRegisterHash = make(map[string]string)
+var UserRegisterHash = sync.Map{}
 
 type userService struct {
 	privateKey *ecdsa.PrivateKey // keep this private - NEVER expose it!!!

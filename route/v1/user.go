@@ -48,7 +48,7 @@ func PostUserRegister(ctx echo.Context) error {
 	username := json["username"]
 	pwd := json["password"]
 	key := json["key"]
-	if _, ok := service.UserRegisterHash[key]; !ok {
+	if _, ok := service.UserRegisterHash.Load(key); !ok {
 		return ctx.JSON(common_err.CLIENT_ERROR,
 			model.Result{Success: common_err.KEY_NOT_EXIST, Message: common_err.GetMsg(common_err.KEY_NOT_EXIST)})
 	}
@@ -77,7 +77,7 @@ func PostUserRegister(ctx echo.Context) error {
 		return ctx.JSON(common_err.SERVICE_ERROR, model.Result{Success: common_err.SERVICE_ERROR, Message: common_err.GetMsg(common_err.SERVICE_ERROR)})
 	}
 	file.MkDir(config.AppInfo.UserDataPath + "/" + strconv.Itoa(user.Id))
-	delete(service.UserRegisterHash, key)
+	service.UserRegisterHash.Delete(key)
 	return ctx.JSON(common_err.SUCCESS, model.Result{Success: common_err.SUCCESS, Message: common_err.GetMsg(common_err.SUCCESS)})
 }
 
@@ -758,7 +758,7 @@ func GetUserStatus(ctx echo.Context) error {
 		data["key"] = ""
 	} else {
 		key := uuid.NewV4().String()
-		service.UserRegisterHash[key] = key
+		service.UserRegisterHash.Store(key, key)
 		data["key"] = key
 		data["initialized"] = false
 	}
