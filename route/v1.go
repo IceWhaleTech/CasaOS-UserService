@@ -42,7 +42,7 @@ func InitRouter() http.Handler {
 	v1UsersGroup := v1Group.Group("/users")
 	v1UsersGroup.Use(echo_middleware.JWTWithConfig(echo_middleware.JWTConfig{
 		Skipper: func(c echo.Context) bool {
-			return c.RealIP() == "::1" || c.RealIP() == "127.0.0.1"
+			return isLocalRequest(c.Request())
 		},
 		ParseTokenFunc: func(token string, c echo.Context) (interface{}, error) {
 			valid, claims, err := jwt.Validate(
